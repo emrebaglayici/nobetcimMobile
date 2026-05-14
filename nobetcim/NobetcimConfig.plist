@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NOBETECZA_API_KEY</key>
+	<string>necz_015e9b6cf7a7d9812591582749522eb32bb9a02e39888d92</string>
+	<key>NOBETECZA_BASE_URL</key>
+	<string>https://api.nobetecza.com</string>
+</dict>
+</plist>
