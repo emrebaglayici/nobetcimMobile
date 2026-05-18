@@ -7,7 +7,6 @@ struct NobetcimApp: App {
 
     init() {
         AdMobManager.shared.configure()
-        ConsentManager.shared.prepareConsentFlow()
     }
 
     var body: some Scene {
@@ -58,6 +57,12 @@ struct RootTabView: View {
                 Label("Daha Fazla", systemImage: "ellipsis.circle.fill")
             }
             .tag(AppTab.more)
+        }
+        .task {
+            await ConsentManager.shared.requestConsentIfNeeded()
+        }
+        .onChange(of: selectedTab) { _, _ in
+            interstitialAdManager.recordTabChange()
         }
     }
 }

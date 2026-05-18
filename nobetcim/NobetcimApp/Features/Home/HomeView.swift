@@ -4,38 +4,34 @@ struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject private var interstitialAdManager: InterstitialAdManager
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.scenePhase) private var scenePhase
     @State private var isSearchOptionsExpanded = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    searchPanel
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                searchPanel
 
-                    PharmacyListView(
-                        pharmacies: viewModel.pharmacies,
-                        isLoading: viewModel.isLoading,
-                        errorMessage: viewModel.errorMessage,
-                        hasSearched: viewModel.hasSearched,
-                        retry: { Task { await performSearch() } }
-                    )
-                }
-                .padding()
-                .frame(maxWidth: AppTheme.contentMaxWidth, alignment: .top)
-                .frame(maxWidth: .infinity)
+                PharmacyListView(
+                    pharmacies: viewModel.pharmacies,
+                    isLoading: viewModel.isLoading,
+                    errorMessage: viewModel.errorMessage,
+                    hasSearched: viewModel.hasSearched,
+                    retry: { Task { await performSearch(forceRefresh: true) } }
+                )
             }
-            .refreshable {
-                await performSearch()
-            }
-
-            BannerAdView()
-                .padding(.vertical, 8)
+            .padding()
+            .frame(maxWidth: AppTheme.contentMaxWidth, alignment: .top)
+            .frame(maxWidth: .infinity)
+        }
+        .refreshable {
+            await performSearch(forceRefresh: true, isPullToRefresh: true)
         }
         .navigationTitle("Nöbetçim")
         .navigationBarTitleDisplayMode(.inline)
         .task {
             interstitialAdManager.load()
+            configureLocationMonitoring()
             Task {
                 await viewModel.loadDirectory()
             }
@@ -44,9 +40,21 @@ struct HomeView: View {
             }
         }
         .onChange(of: viewModel.searchMode) {
+            configureLocationMonitoring()
             guard viewModel.searchMode == .city else { return }
             Task {
                 await viewModel.loadDirectory()
+            }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else {
+                locationManager.setContinuousMonitoringEnabled(false)
+                return
+            }
+            configureLocationMonitoring()
+            interstitialAdManager.recordAppBecameActive()
+            Task {
+                await viewModel.refreshNearbyForWidgetIfNeeded(locationManager: locationManager)
             }
         }
     }
@@ -191,11 +199,28 @@ struct HomeView: View {
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 10))
     }
 
-    private func performSearch() async {
-        let didFindResults = await viewModel.search(locationManager: locationManager)
+    private func configureLocationMonitoring() {
+        let enabled = viewModel.searchMode == .nearby
+        if enabled {
+            locationManager.onLocationUpdate = { location in
+                Task { @MainActor in
+                    viewModel.handleSignificantLocationChange(location, locationManager: locationManager)
+                }
+            }
+        } else {
+            locationManager.onLocationUpdate = nil
+        }
+        locationManager.setContinuousMonitoringEnabled(enabled)
+    }
+
+    private func performSearch(forceRefresh: Bool = false, isPullToRefresh: Bool = false) async {
+        let didFindResults = await viewModel.search(
+            locationManager: locationManager,
+            forceRefresh: forceRefresh,
+            isPullToRefresh: isPullToRefresh
+        )
         if didFindResults {
             interstitialAdManager.recordSuccessfulSearch()
-            interstitialAdManager.showIfEligible()
         }
     }
 }

@@ -22,7 +22,7 @@ struct PharmacyCardView: View {
                             .font(.headline)
                             .lineLimit(2)
                             .foregroundStyle(.primary)
-                        Text("\(pharmacy.district) / \(pharmacy.city)")
+                        Text(pharmacy.displayLocationLine)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -30,7 +30,7 @@ struct PharmacyCardView: View {
                     Spacer()
                 }
 
-                Text(pharmacy.address)
+                Text(pharmacy.displayAddress)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(3)
@@ -38,7 +38,7 @@ struct PharmacyCardView: View {
                 HStack(spacing: 8) {
                     Badge(text: "Bugün Nöbetçi", systemImage: "checkmark.seal.fill", color: AppTheme.primary)
                     if let distance = pharmacy.distanceKm {
-                        Badge(text: String(format: "%.1f km", distance), systemImage: "location.fill", color: .blue)
+                        Badge(text: String(format: "%.1f km", distance), systemImage: "location.fill", color: AppTheme.primary)
                     }
                 }
 

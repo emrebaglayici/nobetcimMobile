@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import UIKit
 
 #if canImport(GoogleMobileAds)
 import GoogleMobileAds
@@ -8,7 +9,9 @@ import GoogleMobileAds
 
 @MainActor
 final class InterstitialAdManager: ObservableObject {
-    private var successfulSearchCount = 0
+    private var engagementCount = 0
+    private var lastPresentedAt: Date?
+    private let minimumInterval: TimeInterval = 90
 
     #if canImport(GoogleMobileAds)
     private var interstitial: InterstitialAd?
@@ -17,30 +20,76 @@ final class InterstitialAdManager: ObservableObject {
     func load() {
         #if canImport(GoogleMobileAds)
         InterstitialAd.load(with: AppConfig.interstitialAdUnitID, request: Request()) { [weak self] ad, _ in
-            self?.interstitial = ad
+            Task { @MainActor in
+                self?.interstitial = ad
+            }
         }
         #endif
     }
 
     func recordSuccessfulSearch() {
-        successfulSearchCount += 1
+        engagementCount += 1
+        if engagementCount % 2 == 0 {
+            presentIfReady()
+        }
     }
 
-    func showIfEligible() {
-        guard successfulSearchCount >= 3, successfulSearchCount % 3 == 0 else { return }
+    func recordTabChange() {
+        engagementCount += 1
+        if engagementCount % 3 == 0 {
+            presentIfReady()
+        }
+    }
+
+    func recordAppBecameActive() {
+        engagementCount += 1
+        if engagementCount % 5 == 0 {
+            presentIfReady()
+        }
+    }
+
+    private func presentIfReady() {
+        guard canPresentNow else { return }
+
         #if canImport(GoogleMobileAds)
-        guard let root = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .flatMap(\.windows)
-            .first(where: { $0.isKeyWindow })?
-            .rootViewController,
-              let interstitial else {
+        guard let root = Self.topViewController(),
+              let ad = interstitial else {
             load()
             return
         }
-        interstitial.present(from: root)
+        ad.present(from: root)
         self.interstitial = nil
+        lastPresentedAt = Date()
         load()
         #endif
+    }
+
+    private var canPresentNow: Bool {
+        guard let lastPresentedAt else { return true }
+        return Date().timeIntervalSince(lastPresentedAt) >= minimumInterval
+    }
+
+    private static func topViewController() -> UIViewController? {
+        guard let root = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap(\.windows)
+            .first(where: \.isKeyWindow)?
+            .rootViewController else {
+            return nil
+        }
+        return topPresenter(from: root)
+    }
+
+    private static func topPresenter(from controller: UIViewController) -> UIViewController {
+        if let presented = controller.presentedViewController {
+            return topPresenter(from: presented)
+        }
+        if let navigation = controller as? UINavigationController, let visible = navigation.visibleViewController {
+            return topPresenter(from: visible)
+        }
+        if let tab = controller as? UITabBarController, let selected = tab.selectedViewController {
+            return topPresenter(from: selected)
+        }
+        return controller
     }
 }

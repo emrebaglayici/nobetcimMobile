@@ -1,0 +1,7 @@
+// Opsiyonel: Team ID veya bundle ID'yi kişisel olarak override etmek için
+// bu dosyayı Developer.xcconfig olarak kopyalayın (gitignore'da).
+//
+// #include? "Developer.xcconfig" satırını Base.xcconfig'e ekleyebilirsiniz.
+
+// DEVELOPMENT_TEAM = YOUR_TEAM_ID_HERE
+// MAIN_BUNDLE_IDENTIFIER = com.sirketiniz.nobetcim

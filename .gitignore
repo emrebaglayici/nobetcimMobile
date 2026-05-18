@@ -1,0 +1,58 @@
+# --- Secrets / local developer (never commit) ---
+Config/Secrets.xcconfig
+Config/Developer.xcconfig
+nobetcim/NobetcimConfig.plist
+*.pem
+*.p12
+*.mobileprovision
+
+# --- Xcode / build ---
+DerivedData/
+build/
+*.xcuserstate
+**/xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM
+*.dSYM.zip
+*.app.dSYM.zip
+*.bcsymbolmap
+timeline.xctimeline
+playground.xcworkspace
+
+# Swift Package Manager (local caches only; keep Package.resolved)
+.swiftpm/
+.build/
+Packages/
+Package.pins
+Carthage/Build/
+
+# CocoaPods (if added later)
+Pods/
+*.xcworkspace
+!default.xcworkspace
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# IDE / editors
+.idea/
+*.swp
+*~
+
+# Env / local overrides
+.env
+.env.*
+!.env.example

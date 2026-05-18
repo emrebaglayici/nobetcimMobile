@@ -32,6 +32,7 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Daha Fazla")
+        .tint(AppTheme.primary)
     }
 }
 

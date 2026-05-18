@@ -29,9 +29,7 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
             #if DEBUG
             print("NobetEcza daily cache hit: nearby")
             #endif
-            let sorted = cached.sortedByDistance(from: CLLocation(latitude: latitude, longitude: longitude))
-            NearestPharmacyWidgetStore.save(Array(sorted.prefix(2)))
-            return sorted
+            return finishNearby(sorted: cached.sortedByDistance(from: CLLocation(latitude: latitude, longitude: longitude)), anchor: coordinateAnchor(latitude, longitude))
         }
 
         do {
@@ -40,14 +38,15 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
             #endif
             let remote = try await pharmacyService.fetchNearby(latitude: latitude, longitude: longitude, radius: 50000)
             let sorted = remote.sortedByDistance(from: CLLocation(latitude: latitude, longitude: longitude))
-            cache.saveToday(sorted)
-            NearestPharmacyWidgetStore.save(Array(sorted.prefix(2)))
-            return sorted
+            if !sorted.isEmpty {
+                cache.saveToday(sorted)
+            }
+            return finishNearby(sorted: sorted, anchor: coordinateAnchor(latitude, longitude))
         } catch {
-            if let stale = cache.loadAnyCachedValue(), !stale.isEmpty {
-                let sorted = stale.sortedByDistance(from: CLLocation(latitude: latitude, longitude: longitude))
-                NearestPharmacyWidgetStore.save(Array(sorted.prefix(2)))
-                return sorted
+            // 429/5xx: only today's cache — never yesterday's duty list (rotates daily).
+            if let todayCache = cache.loadToday(), !todayCache.isEmpty, error.prefersStaleCacheFallback {
+                let sorted = todayCache.sortedByDistance(from: CLLocation(latitude: latitude, longitude: longitude))
+                return finishNearby(sorted: sorted, anchor: coordinateAnchor(latitude, longitude))
             }
             throw error
         }
@@ -73,11 +72,13 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
             #endif
             let remote = try await pharmacyService.fetchDutyPharmacies(citySlug: citySlug, districtSlug: districtSlug)
             let sorted = remote.sortedByDistrictAndName()
-            cache.saveToday(sorted)
+            if !sorted.isEmpty {
+                cache.saveToday(sorted)
+            }
             return sorted
         } catch {
-            if let stale = cache.loadAnyCachedValue(), !stale.isEmpty {
-                return stale.sortedByDistrictAndName()
+            if let todayCache = cache.loadToday(), !todayCache.isEmpty, error.prefersStaleCacheFallback {
+                return todayCache.sortedByDistrictAndName()
             }
             throw error
         }
@@ -130,9 +131,22 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
             #if DEBUG
             print("District fetch failed:", error)
             #endif
+            if let cached = cache.load(), !cached.isEmpty, error.prefersStaleCacheFallback {
+                mergeDistricts(cached, into: cityInfo)
+                return cached.map(\.name).sortedTurkish
+            }
         }
 
         return []
+    }
+
+    private func finishNearby(sorted: [Pharmacy], anchor: CLLocationCoordinate2D) -> [Pharmacy] {
+        NearestPharmacyWidgetStore.save(Array(sorted.prefix(2)), anchor: anchor)
+        return sorted
+    }
+
+    private func coordinateAnchor(_ latitude: CLLocationDegrees, _ longitude: CLLocationDegrees) -> CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 
     private func cityInfo(for city: String) -> CityDistrict? {
@@ -156,6 +170,12 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
             directory.append(updated)
         }
         directoryCache.save(directory.cleaned)
+    }
+}
+
+private extension Error {
+    var prefersStaleCacheFallback: Bool {
+        (self as? NetworkError)?.prefersStaleCache ?? false
     }
 }
 

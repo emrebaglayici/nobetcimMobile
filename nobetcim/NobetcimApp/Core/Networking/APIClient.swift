@@ -30,20 +30,27 @@ final class APIClient: APIClientProtocol {
         } catch let error as NetworkError {
             throw error
         } catch {
-            throw NetworkError.transport(error.localizedDescription)
+            throw mapTransportError(error)
         }
     }
 
     private func perform<T: Decodable>(_ request: URLRequest, as type: T.Type, allowsRetry: Bool) async throws -> T {
         do {
-            return try await decode(request, as: type)
-        } catch NetworkError.transport where allowsRetry {
-            try await Task.sleep(for: .milliseconds(450))
-            return try await decode(request, as: type)
+            return try await decode(request, as: type, canRetryRateLimit: allowsRetry)
+        } catch let error as NetworkError {
+            if case .transport = error, allowsRetry {
+                try await Task.sleep(for: .milliseconds(450))
+                return try await decode(request, as: type, canRetryRateLimit: false)
+            }
+            throw error
         }
     }
 
-    private func decode<T: Decodable>(_ request: URLRequest, as type: T.Type) async throws -> T {
+    private func decode<T: Decodable>(
+        _ request: URLRequest,
+        as type: T.Type,
+        canRetryRateLimit: Bool
+    ) async throws -> T {
         let (data, response): (Data, URLResponse)
         #if DEBUG
         print("NobetEcza request:", request.url?.absoluteString ?? "<missing url>")
@@ -51,7 +58,7 @@ final class APIClient: APIClientProtocol {
         do {
             (data, response) = try await session.data(for: request)
         } catch {
-            throw NetworkError.transport(error.localizedDescription)
+            throw mapTransportError(error)
         }
 
         guard let httpResponse = response as? HTTPURLResponse else {
@@ -76,10 +83,26 @@ final class APIClient: APIClientProtocol {
             throw NetworkError.unauthorized
         case 404:
             throw NetworkError.notFound
+        case 429:
+            if canRetryRateLimit {
+                try await Task.sleep(for: .milliseconds(900))
+                return try await decode(request, as: type, canRetryRateLimit: false)
+            }
+            throw NetworkError.rateLimited
         case 500...599:
             throw NetworkError.server(httpResponse.statusCode)
         default:
             throw NetworkError.unknown
         }
+    }
+
+    private func mapTransportError(_ error: Error) -> Error {
+        if error is CancellationError { return error }
+        if let urlError = error as? URLError, urlError.code == .cancelled { return error }
+        let nsError = error as NSError
+        if nsError.domain == NSURLErrorDomain, nsError.code == NSURLErrorCancelled {
+            return error
+        }
+        return NetworkError.transport(error.localizedDescription)
     }
 }

@@ -29,9 +29,10 @@ struct CityDistrict: Identifiable, Codable, Hashable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        city = try container.decodeFirstString(for: [.city, .il, .ad, .name]) ?? ""
+        city = (try container.decodeFirstString(for: [.city, .il, .ad, .name]) ?? "").localizedTitleCasedTurkish
         citySlug = try container.decodeFirstString(for: [.slug]) ?? city.slugifiedTurkish
-        districts = try container.decodeFirstStringArray(for: [.districts, .ilceler, .children]) ?? []
+        districts = (try container.decodeFirstStringArray(for: [.districts, .ilceler, .children]) ?? [])
+            .map { $0.localizedTitleCasedTurkish }
         districtSlugs = try container.decodeIfPresent([String: String].self, forKey: .districtSlugs) ?? [:]
     }
 
@@ -70,11 +71,12 @@ struct DistrictInfo: Identifiable, Codable, Hashable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        name = try container.decodeIfPresent(String.self, forKey: .name)
+        let rawName = try container.decodeIfPresent(String.self, forKey: .name)
             ?? container.decodeIfPresent(String.self, forKey: .ad)
             ?? container.decodeIfPresent(String.self, forKey: .district)
             ?? container.decodeIfPresent(String.self, forKey: .ilce)
             ?? ""
+        name = rawName.localizedTitleCasedTurkish
         slug = try container.decodeIfPresent(String.self, forKey: .slug) ?? name.slugifiedTurkish
     }
 

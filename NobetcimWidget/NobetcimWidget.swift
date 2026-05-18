@@ -1,7 +1,18 @@
 import SwiftUI
 import WidgetKit
 
-private let appGroupID = "group.talhagergin.nobetcim"
+private enum WidgetConfig {
+    static var appGroupID: String {
+        if let raw = Bundle.main.object(forInfoDictionaryKey: "APP_GROUP_ID") as? String,
+           !raw.isEmpty, !raw.hasPrefix("$(") {
+            return raw
+        }
+        let bundleID = Bundle.main.bundleIdentifier ?? "emrebaglayici.nobetcim.widget"
+        let mainID = bundleID.replacingOccurrences(of: ".widget", with: "")
+        return "group.\(mainID)"
+    }
+}
+
 private let nearestPharmaciesKey = "nobetcim.widget.nearestPharmacies"
 private let legacyNearestPharmacyKey = "nobetcim.widget.nearestPharmacy"
 
@@ -32,12 +43,12 @@ struct NearestPharmacyProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<NearestPharmacyEntry>) -> Void) {
         let entry = NearestPharmacyEntry(date: Date(), pharmacies: loadPharmacies())
-        let nextRefresh = Calendar.current.date(byAdding: .minute, value: 30, to: Date()) ?? Date().addingTimeInterval(1800)
+        let nextRefresh = Calendar.current.date(byAdding: .minute, value: 15, to: Date()) ?? Date().addingTimeInterval(900)
         completion(Timeline(entries: [entry], policy: .after(nextRefresh)))
     }
 
     private func loadPharmacies() -> [WidgetPharmacy] {
-        guard let defaults = UserDefaults(suiteName: appGroupID) else { return [] }
+        guard let defaults = UserDefaults(suiteName: WidgetConfig.appGroupID) else { return [] }
         let decoder = JSONDecoder()
 
         if let data = defaults.data(forKey: nearestPharmaciesKey),
@@ -66,7 +77,7 @@ struct NearestPharmacyWidgetView: View {
                         .foregroundStyle(.white)
                         .font(.caption.weight(.bold))
                         .frame(width: 24, height: 24)
-                        .background(Color(red: 0.0, green: 0.55, blue: 0.44), in: Circle())
+                        .background(Color(red: 196 / 255, green: 30 / 255, blue: 58 / 255), in: Circle())
                     Text("En Yakın Eczane")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
@@ -90,7 +101,7 @@ struct NearestPharmacyWidgetView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Image(systemName: "location.circle.fill")
                     .font(.title2)
-                    .foregroundStyle(Color(red: 0.0, green: 0.55, blue: 0.44))
+                    .foregroundStyle(Color(red: 196 / 255, green: 30 / 255, blue: 58 / 255))
                 Text("Yakındaki eczane")
                     .font(.headline)
                 Text("Uygulamayı açıp konumuna göre arama yapınca burada gösterilecek.")
@@ -109,7 +120,7 @@ struct NearestPharmacyWidgetView: View {
                 .lineLimit(2)
                 .minimumScaleFactor(0.78)
 
-            Text("\(pharmacy.district) / \(pharmacy.city)")
+            Text("\(pharmacy.district.localizedTitleCasedTurkish) / \(pharmacy.city.localizedTitleCasedTurkish)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
@@ -117,7 +128,7 @@ struct NearestPharmacyWidgetView: View {
             if let distanceKm = pharmacy.distanceKm {
                 Label(String(format: "%.1f km", distanceKm), systemImage: "location.fill")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(Color(red: 0.0, green: 0.55, blue: 0.44))
+                    .foregroundStyle(Color(red: 196 / 255, green: 30 / 255, blue: 58 / 255))
             }
         }
     }
@@ -126,9 +137,9 @@ struct NearestPharmacyWidgetView: View {
         HStack(alignment: .top, spacing: 8) {
             Text("\(index)")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(Color(red: 0.0, green: 0.55, blue: 0.44))
+                .foregroundStyle(Color(red: 196 / 255, green: 30 / 255, blue: 58 / 255))
                 .frame(width: 20, height: 20)
-                .background(Color(red: 0.0, green: 0.55, blue: 0.44).opacity(0.12), in: Circle())
+                .background(Color(red: 196 / 255, green: 30 / 255, blue: 58 / 255).opacity(0.12), in: Circle())
 
             pharmacySummary(pharmacy)
         }

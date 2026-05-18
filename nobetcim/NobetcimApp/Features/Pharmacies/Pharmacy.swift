@@ -24,6 +24,24 @@ struct Pharmacy: Identifiable, Codable, Hashable {
         name.localizedTitleCasedTurkish
     }
 
+    var displayCity: String {
+        city.localizedTitleCasedTurkish
+    }
+
+    var displayDistrict: String {
+        district.localizedTitleCasedTurkish
+    }
+
+    var displayAddress: String {
+        address.localizedTitleCasedTurkish
+    }
+
+    var displayLocationLine: String {
+        [displayDistrict, displayCity]
+            .filter { !$0.isEmpty }
+            .joined(separator: " / ")
+    }
+
     var mapItem: MKMapItem? {
         guard let coordinate else { return nil }
         let item = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
@@ -53,6 +71,7 @@ struct Pharmacy: Identifiable, Codable, Hashable {
         case lon
         case distanceKm
         case distance
+        case mesafe
         case date
         case tarih
         case source
@@ -92,10 +111,11 @@ struct Pharmacy: Identifiable, Codable, Hashable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let name = try container.decodeFirstString(for: [.name, .ad, .pharmacyName, .title]) ?? "Eczane"
-        let city = try container.decodeFirstString(for: [.city, .il]) ?? ""
-        let district = try container.decodeFirstString(for: [.district, .ilce]) ?? ""
-        let address = try container.decodeFirstString(for: [.address, .adres]) ?? ""
+        let name = (try container.decodeFirstString(for: [.name, .ad, .pharmacyName, .title]) ?? "Eczane")
+            .localizedTitleCasedTurkish
+        let city = (try container.decodeFirstString(for: [.city, .il]) ?? "").localizedTitleCasedTurkish
+        let district = (try container.decodeFirstString(for: [.district, .ilce]) ?? "").localizedTitleCasedTurkish
+        let address = (try container.decodeFirstString(for: [.address, .adres]) ?? "").localizedTitleCasedTurkish
         let phone = try container.decodeFirstString(for: [.phone, .phoneNumber, .telefon])
         var latitude = try container.decodeFirstDouble(for: [.latitude, .lat])
         var longitude = try container.decodeFirstDouble(for: [.longitude, .lng, .lon])
@@ -112,7 +132,11 @@ struct Pharmacy: Identifiable, Codable, Hashable {
         self.phone = phone
         self.latitude = latitude
         self.longitude = longitude
-        self.distanceKm = try container.decodeFirstDouble(for: [.distanceKm, .distance])
+        if let meters = try container.decodeFirstDouble(for: [.mesafe]), meters > 0 {
+            self.distanceKm = meters >= 100 ? meters / 1000 : meters
+        } else {
+            self.distanceKm = try container.decodeFirstDouble(for: [.distanceKm, .distance])
+        }
         self.date = try container.decodeFirstString(for: [.date, .tarih])
         self.source = try container.decodeFirstString(for: [.source])
     }

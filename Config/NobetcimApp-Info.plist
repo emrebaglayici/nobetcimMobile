@@ -6,6 +6,8 @@
 	<string>$(ADMOB_BANNER_ID)</string>
 	<key>ADMOB_INTERSTITIAL_ID</key>
 	<string>$(ADMOB_INTERSTITIAL_ID)</string>
+	<key>APP_GROUP_ID</key>
+	<string>$(APP_GROUP_ID)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>

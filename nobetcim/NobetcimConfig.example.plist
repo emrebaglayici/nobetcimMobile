@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>NOBETECZA_API_KEY</key>
-	<string>necz_015e9b6cf7a7d9812591582749522eb32bb9a02e39888d92</string>
+	<string>YOUR_API_KEY_HERE</string>
 	<key>NOBETECZA_BASE_URL</key>
 	<string>https://api.nobetecza.com</string>
 </dict>

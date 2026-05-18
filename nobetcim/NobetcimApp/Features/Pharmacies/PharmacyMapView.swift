@@ -114,5 +114,4 @@ struct PharmacyMapView: View {
     NavigationStack {
         PharmacyMapView(pharmacies: Pharmacy.previews)
     }
-    .environmentObject(FavoritesStore())
 }

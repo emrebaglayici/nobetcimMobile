@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		0B00000B2FB4000000000000 /* NobetcimWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0B0000012FB4000000000000 /* NobetcimWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		0D1000032FB6000000000001 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 0D1000022FB6000000000001 /* GoogleMobileAds */; };
+		0D1000062FB6000000000002 /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = 0D1000052FB6000000000002 /* GoogleUserMessagingPlatform */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +39,8 @@
 /* Begin PBXFileReference section */
 		0A65842F2FB30DF2005347A8 /* nobetcim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = nobetcim.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0B0000012FB4000000000000 /* NobetcimWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NobetcimWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		0C1000012FB5000000000001 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		0C1000022FB5000000000002 /* Secrets.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig.example; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -57,6 +61,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0D1000032FB6000000000001 /* GoogleMobileAds in Frameworks */,
+				0D1000062FB6000000000002 /* GoogleUserMessagingPlatform in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -73,6 +79,7 @@
 		0A6584262FB30DF2005347A8 = {
 			isa = PBXGroup;
 			children = (
+				0C1000102FB5000000000001 /* Config */,
 				0A6584312FB30DF2005347A8 /* nobetcim */,
 				0B0000022FB4000000000000 /* NobetcimWidget */,
 				0A6584302FB30DF2005347A8 /* Products */,
@@ -88,6 +95,15 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		0C1000102FB5000000000001 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				0C1000012FB5000000000001 /* Base.xcconfig */,
+				0C1000022FB5000000000002 /* Secrets.xcconfig.example */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -95,6 +111,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0A65843A2FB30DF4005347A8 /* Build configuration list for PBXNativeTarget "nobetcim" */;
 			buildPhases = (
+				0D1000202FB6000000000010 /* Validate API Key */,
 				0A65842B2FB30DF2005347A8 /* Sources */,
 				0A65842C2FB30DF2005347A8 /* Frameworks */,
 				0A65842D2FB30DF2005347A8 /* Resources */,
@@ -110,6 +127,8 @@
 			);
 			name = nobetcim;
 			packageProductDependencies = (
+				0D1000022FB6000000000001 /* GoogleMobileAds */,
+				0D1000052FB6000000000002 /* GoogleUserMessagingPlatform */,
 			);
 			productName = nobetcim;
 			productReference = 0A65842F2FB30DF2005347A8 /* nobetcim.app */;
@@ -164,6 +183,10 @@
 			);
 			mainGroup = 0A6584262FB30DF2005347A8;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0D1000012FB6000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				0D1000042FB6000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0A6584302FB30DF2005347A8 /* Products */;
 			projectDirPath = "";
@@ -191,6 +214,30 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0D1000202FB6000000000010 /* Validate API Key */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/scripts/validate-build-secrets.sh",
+				"$(SRCROOT)/Config/Secrets.xcconfig",
+			);
+			name = "Validate API Key";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/scripts/validate-build-secrets.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0A65842B2FB30DF2005347A8 /* Sources */ = {
@@ -220,6 +267,7 @@
 /* Begin XCBuildConfiguration section */
 		0A6584382FB30DF4005347A8 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0C1000012FB5000000000001 /* Base.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -253,7 +301,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = YP367N62QD;
+				DEVELOPMENT_TEAM = "$(DEVELOPMENT_TEAM)";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -282,6 +330,7 @@
 		};
 		0A6584392FB30DF4005347A8 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0C1000012FB5000000000001 /* Base.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -315,7 +364,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = YP367N62QD;
+				DEVELOPMENT_TEAM = "$(DEVELOPMENT_TEAM)";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -344,10 +393,11 @@
 				CODE_SIGN_ENTITLEMENTS = nobetcim/Nobetcim.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YP367N62QD;
+				DEVELOPMENT_TEAM = "$(DEVELOPMENT_TEAM)";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "Config/NobetcimApp-Info.plist";
@@ -371,9 +421,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				MARKETING_VERSION = 1.0;
-				NOBETECZA_API_KEY = necz_015e9b6cf7a7d9812591582749522eb32bb9a02e39888d92;
-				NOBETECZA_BASE_URL = "https://api.nobetecza.com";
-				PRODUCT_BUNDLE_IDENTIFIER = talhagergin.nobetcim;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MAIN_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = iphoneos;
@@ -397,10 +445,11 @@
 				CODE_SIGN_ENTITLEMENTS = nobetcim/Nobetcim.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YP367N62QD;
+				DEVELOPMENT_TEAM = "$(DEVELOPMENT_TEAM)";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "Config/NobetcimApp-Info.plist";
@@ -424,9 +473,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				MARKETING_VERSION = 1.0;
-				NOBETECZA_API_KEY = necz_015e9b6cf7a7d9812591582749522eb32bb9a02e39888d92;
-				NOBETECZA_BASE_URL = "https://api.nobetecza.com";
-				PRODUCT_BUNDLE_IDENTIFIER = talhagergin.nobetcim;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MAIN_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = iphoneos;
@@ -447,7 +494,7 @@
 				CODE_SIGN_ENTITLEMENTS = NobetcimWidget/NobetcimWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YP367N62QD;
+				DEVELOPMENT_TEAM = "$(DEVELOPMENT_TEAM)";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "Config/NobetcimWidget-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -457,7 +504,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = talhagergin.nobetcim.widget;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(WIDGET_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -477,7 +524,7 @@
 				CODE_SIGN_ENTITLEMENTS = NobetcimWidget/NobetcimWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = YP367N62QD;
+				DEVELOPMENT_TEAM = "$(DEVELOPMENT_TEAM)";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "Config/NobetcimWidget-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -487,7 +534,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = talhagergin.nobetcim.widget;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(WIDGET_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -531,6 +578,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		0D1000012FB6000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.0.0;
+			};
+		};
+		0D1000042FB6000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0D1000022FB6000000000001 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0D1000012FB6000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+		0D1000052FB6000000000002 /* GoogleUserMessagingPlatform */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0D1000042FB6000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */;
+			productName = GoogleUserMessagingPlatform;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0A6584272FB30DF2005347A8 /* Project object */;
 }

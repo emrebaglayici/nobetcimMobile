@@ -1,0 +1,12 @@
+// Shared build settings — include optional local secrets (not committed).
+#include? "Secrets.xcconfig"
+
+// App identifiers — Apple Developer portal ile aynı olmalı.
+MAIN_BUNDLE_IDENTIFIER = emrebaglayici.nobetcim
+WIDGET_BUNDLE_IDENTIFIER = emrebaglayici.nobetcim.widget
+APP_GROUP_ID = group.$(MAIN_BUNDLE_IDENTIFIER)
+
+// Apple Developer Team ID (Emre Baglayici)
+DEVELOPMENT_TEAM = 8XZ69YB7U5
+
+NOBETECZA_BASE_URL = https:/$()/api.nobetecza.com

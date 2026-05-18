@@ -6,6 +6,7 @@ enum NetworkError: Error, LocalizedError, Equatable {
     case invalidResponse
     case unauthorized
     case notFound
+    case rateLimited
     case server(Int)
     case decoding
     case transport(String)
@@ -23,6 +24,8 @@ enum NetworkError: Error, LocalizedError, Equatable {
             "API yetkilendirmesi başarısız."
         case .notFound:
             "Bu bölgede nöbetçi eczane bulunamadı."
+        case .rateLimited:
+            "Sunucu geçici olarak yoğun. Lütfen kısa süre sonra tekrar deneyin."
         case .server:
             "Eczane bilgileri alınamadı."
         case .decoding:
@@ -31,6 +34,15 @@ enum NetworkError: Error, LocalizedError, Equatable {
             "İnternet bağlantınızı kontrol edin."
         case .unknown:
             "Beklenmeyen bir hata oluştu."
+        }
+    }
+
+    var prefersStaleCache: Bool {
+        switch self {
+        case .rateLimited, .server:
+            true
+        default:
+            false
         }
     }
 }

@@ -44,16 +44,6 @@ final class DailyCacheStore<Value: Codable> {
         return envelope.dateKey == todayKey
     }
 
-    func loadAnyCachedValue() -> Value? {
-        guard
-            let data = userDefaults.data(forKey: key),
-            let envelope = try? decoder.decode(DailyCacheEnvelope<Value>.self, from: data)
-        else {
-            return nil
-        }
-        return envelope.value
-    }
-
     func saveToday(_ value: Value) {
         let envelope = DailyCacheEnvelope(dateKey: todayKey, cachedAt: Date(), value: value)
         guard let data = try? encoder.encode(envelope) else { return }

@@ -21,10 +21,12 @@ struct PharmacyDetailView: View {
                         actions
                         warning
                     }
-                    .padding(.horizontal)
-                    .frame(maxWidth: AppTheme.contentMaxWidth, alignment: .leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .padding(.horizontal, 16)
+                .frame(maxWidth: AppTheme.contentMaxWidth)
                 .frame(maxWidth: .infinity)
+                .padding(.bottom, 16)
             }
         }
         .navigationTitle("Eczane Detayı")
@@ -53,7 +55,7 @@ struct PharmacyDetailView: View {
                     Text(pharmacy.displayName)
                         .font(.title3.weight(.semibold))
                         .fixedSize(horizontal: false, vertical: true)
-                    Text("\(pharmacy.district) / \(pharmacy.city)")
+                    Text(pharmacy.displayLocationLine)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     DetailBadge(text: "Bugün Nöbetçi", systemImage: "checkmark.seal.fill", color: AppTheme.primary)
@@ -61,96 +63,94 @@ struct PharmacyDetailView: View {
 
                 Spacer(minLength: 0)
             }
-            .padding()
+            .padding(16)
             .frame(maxWidth: AppTheme.contentMaxWidth, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
     @ViewBuilder
     private var mapPreview: some View {
         if let coordinate = pharmacy.coordinate {
-            Map {
-                Marker(pharmacy.displayName, coordinate: coordinate)
-            }
-            .frame(height: 240)
-            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
-            .overlay {
-                RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius)
-                    .stroke(Color.primary.opacity(0.06))
-            }
-            .overlay(alignment: .bottomTrailing) {
-                Button {
-                    AppActions.openAppleMaps(for: pharmacy)
-                } label: {
-                    Label("Yol Tarifi", systemImage: "arrow.triangle.turn.up.right.diamond.fill")
-                        .font(.subheadline.weight(.semibold))
+            DetailCard {
+                VStack(spacing: 0) {
+                    Map {
+                        Marker(pharmacy.displayName, coordinate: coordinate)
+                    }
+                    .frame(height: 220)
+                    .frame(maxWidth: .infinity)
+                    .allowsHitTesting(true)
+
+                    Divider()
+
+                    Button {
+                        AppActions.openAppleMaps(for: pharmacy)
+                    } label: {
+                        Label("Yol Tarifi", systemImage: "arrow.triangle.turn.up.right.diamond.fill")
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(AppTheme.directions)
+                    .padding(12)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(AppTheme.directions)
-                .padding(12)
             }
         }
     }
 
     private var infoSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            InfoRow(title: "Adres", value: pharmacy.address, systemImage: "mappin.and.ellipse")
-            InfoRow(title: "Telefon", value: pharmacy.phone ?? "Telefon numarası bulunamadı.", systemImage: "phone")
-            InfoRow(title: "Konum", value: "\(pharmacy.city) / \(pharmacy.district)", systemImage: "building.2")
-        }
-        .padding()
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
-        .overlay {
-            RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius)
-                .stroke(Color.primary.opacity(0.06))
+        DetailCard {
+            VStack(alignment: .leading, spacing: 14) {
+                InfoRow(title: "Adres", value: pharmacy.displayAddress, systemImage: "mappin.and.ellipse")
+                InfoRow(title: "Telefon", value: pharmacy.phone ?? "Telefon numarası bulunamadı.", systemImage: "phone")
+                InfoRow(title: "Konum", value: pharmacy.displayLocationLine, systemImage: "building.2")
+            }
+            .padding(16)
         }
     }
 
     private var actions: some View {
-        VStack(spacing: 10) {
-            Button {
-                guard pharmacy.phone?.isEmpty == false else {
-                    showsPhoneAlert = true
-                    return
+        DetailCard {
+            VStack(spacing: 10) {
+                Button {
+                    guard pharmacy.phone?.isEmpty == false else {
+                        showsPhoneAlert = true
+                        return
+                    }
+                    AppActions.call(pharmacy.phone)
+                } label: {
+                    Label("Eczaneyi Ara", systemImage: "phone.fill")
+                        .frame(maxWidth: .infinity)
                 }
-                AppActions.call(pharmacy.phone)
-            } label: {
-                Label("Eczaneyi Ara", systemImage: "phone.fill")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(AppTheme.call)
+                .buttonStyle(.borderedProminent)
+                .tint(AppTheme.call)
 
-            Button {
-                guard pharmacy.coordinate != nil else {
-                    showsDirectionsAlert = true
-                    return
+                Button {
+                    guard pharmacy.coordinate != nil else {
+                        showsDirectionsAlert = true
+                        return
+                    }
+                    AppActions.openAppleMaps(for: pharmacy)
+                } label: {
+                    Label("Apple Haritalar ile Yol Tarifi", systemImage: "map.fill")
+                        .frame(maxWidth: .infinity)
                 }
-                AppActions.openAppleMaps(for: pharmacy)
-            } label: {
-                Label("Apple Haritalar ile Yol Tarifi", systemImage: "map.fill")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(AppTheme.directions)
+                .buttonStyle(.borderedProminent)
+                .tint(AppTheme.directions)
 
-            Button {
-                guard pharmacy.coordinate != nil else {
-                    showsDirectionsAlert = true
-                    return
+                Button {
+                    guard pharmacy.coordinate != nil else {
+                        showsDirectionsAlert = true
+                        return
+                    }
+                    AppActions.openGoogleMaps(for: pharmacy)
+                } label: {
+                    Label("Google Haritalar ile Aç", systemImage: "globe")
+                        .frame(maxWidth: .infinity)
                 }
-                AppActions.openGoogleMaps(for: pharmacy)
-            } label: {
-                Label("Google Haritalar ile Aç", systemImage: "globe")
-                    .frame(maxWidth: .infinity)
+                .buttonStyle(.bordered)
             }
-            .buttonStyle(.bordered)
-        }
-        .padding()
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
-        .overlay {
-            RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius)
-                .stroke(Color.primary.opacity(0.06))
+            .padding(16)
         }
     }
 
@@ -161,8 +161,24 @@ struct PharmacyDetailView: View {
         )
         .font(.footnote)
         .foregroundStyle(.secondary)
-        .padding()
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(AppTheme.warning.opacity(0.14), in: RoundedRectangle(cornerRadius: 14))
+    }
+}
+
+private struct DetailCard<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        content
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
+            .overlay {
+                RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius)
+                    .stroke(Color.primary.opacity(0.06))
+            }
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
     }
 }
 
@@ -182,7 +198,9 @@ private struct InfoRow: View {
                     .foregroundStyle(.secondary)
                 Text(value)
                     .font(.subheadline)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }
