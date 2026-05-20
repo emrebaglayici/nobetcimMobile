@@ -58,6 +58,14 @@ Xcode konsolunda sık görülen **CoreTelephony XPC**, **nw_connection**, **WebK
 
 Release build, anahtar yoksa **Validate API Key** script ile durur.
 
+## Google AdMob
+
+Reklam kimlikleri **`nobetcim` target → Build Settings** içinde `ADMOB_APP_ID`, `ADMOB_BANNER_ID`, `ADMOB_INTERSTITIAL_ID` olarak tutulur (`project.pbxproj`). Banner ve geçiş birimleri üretim AdMob kimlikleriyle tanımlıdır.
+
+Geliştirme sırasında [test reklamları](https://developers.google.com/admob/ios/test-ads) kullanmak için cihazı test cihazı olarak kaydedebilir veya geçici olarak test birim kimliklerine dönebilirsiniz.
+
+Yeni birimlerin canlı reklam göstermesi kısa süre gecikebilir; paneldeki **İnceleme gerekli** ve **Gizlilik ve mesajlaşma** adımlarını tamamlayın.
+
 ## App Group & imzalama
 
 - Bundle ID: `emrebaglayici.nobetcim` (`Config/Base.xcconfig`)
