@@ -5,14 +5,14 @@ enum LegalContent {
         LegalSection(
             heading: "1. Veri sorumlusu ve kapsam",
             paragraphs: [
-                "Bu politika, Nöbetçim iOS uygulaması ve nobetcim.info alan adı altındaki hizmetler için geçerlidir. Uygulama; nöbetçi eczane bilgilerine erişim amaçlıdır."
+                "Bu politika, Nöbetçim iOS uygulaması ve nobetcim.info alan adı altındaki hizmetler için geçerlidir. Platform; yerel hizmet ve işletme bilgilerine (bugün ağırlıklı olarak nöbetçi eczaneler) erişimi kolaylaştırmayı amaçlar."
             ]
         ),
         LegalSection(
             heading: "2. Toplanan veriler ve amaçlar",
             bullets: [
-                "Cihazda saklanan veriler: Son kullanılan il ve ilçe seçimleri ile günlük eczane önbelleği yalnızca cihazınızda tutulur; kullanıcı hesabı oluşturulmaz.",
-                "Konum verisi: Yalnızca konum izni vermeniz halinde en yakın eczane listesi için kullanılır. Koordinatlar, yakındaki kayıtları sorgulamak için hizmet sağlayıcısına iletilebilir.",
+                "Cihazda saklanan veriler: Son kullanılan il ve ilçe seçimleri ile günlük liste önbelleği yalnızca cihazınızda tutulur; kullanıcı hesabı oluşturulmaz.",
+                "Konum verisi: Yalnızca konum izni vermeniz halinde yakın kayıtları sıralamak için kullanılır. Koordinatlar, yakındaki kayıtları sorgulamak için hizmet sağlayıcısına iletilebilir.",
                 "Teknik veriler: Barındırma ve API sağlayıcıları standart sunucu günlükleri (IP adresi, istek zamanı vb.) üretebilir; bu, güvenlik ve işletim için yaygın bir uygulamadır."
             ]
         ),
@@ -54,7 +54,7 @@ enum LegalContent {
         LegalSection(
             heading: "2. Hizmetin niteliği",
             paragraphs: [
-                "Uygulama; nöbetçi eczane bilgilerine erişimi kolaylaştırmak amacıyla “olduğu gibi” sunulur. Hizmet sürekliliği, güncelliği veya belirli bir sonucun elde edilmesi garanti edilmez."
+                "Uygulama; yerel hizmet ve işletme bilgilerine erişimi kolaylaştırmak amacıyla “olduğu gibi” sunulur. Hizmet sürekliliği, güncelliği veya belirli bir sonucun elde edilmesi garanti edilmez."
             ]
         ),
         LegalSection(
@@ -102,7 +102,7 @@ enum LegalContent {
         LegalSection(
             heading: "İşlenen kişisel veriler",
             bullets: [
-                "Konum verisi (isteğe bağlı): İzin ile enlem/boylam; yakındaki eczane sorgularında kullanılır. İzin verilmezse il ve ilçe seçimi ile arama yapılabilir.",
+                "Konum verisi (isteğe bağlı): İzin ile enlem/boylam; yakın kayıt sorgularında kullanılır. İzin verilmezse il ve ilçe seçimi ile arama yapılabilir.",
                 "Cihaz verisi: Son arama tercihleri ve günlük önbellek çoğunlukla yalnızca cihazınızda saklanır.",
                 "Teknik veri: IP adresi, istek zamanı gibi veriler barındırma ve güvenlik süreçlerinde işlenebilir.",
                 "Reklam tanımlayıcıları: Ölçüm ve reklam için üçüncü taraflarca (ör. Google) kullanılabilir."

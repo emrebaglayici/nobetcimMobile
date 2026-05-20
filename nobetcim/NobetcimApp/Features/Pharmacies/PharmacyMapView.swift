@@ -12,46 +12,27 @@ struct PharmacyMapView: View {
         pharmacies.first { $0.id == selectedPharmacyID }
     }
 
+    /// GAD banner’a sabit yükseklik şart; ZStack’te `infinity` proposal WebView’ı şişirip haritayı kapatabiliyor.
+    private var mapBannerHeight: CGFloat { 50 }
+
     var body: some View {
-        ZStack(alignment: .bottom) {
-            Map(position: $position, selection: $selectedPharmacyID) {
-                UserAnnotation()
-                ForEach(pharmacies) { pharmacy in
-                    if let coordinate = pharmacy.coordinate {
-                        Marker(pharmacy.displayName, systemImage: "cross.case.fill", coordinate: coordinate)
-                            .tint(AppTheme.primary)
-                            .tag(pharmacy.id)
-                    }
+        Map(position: $position, selection: $selectedPharmacyID) {
+            UserAnnotation()
+            ForEach(pharmacies) { pharmacy in
+                if let coordinate = pharmacy.coordinate {
+                    Marker(pharmacy.displayName, systemImage: "cross.case.fill", coordinate: coordinate)
+                        .tint(AppTheme.primary)
+                        .tag(pharmacy.id)
                 }
             }
-            .mapControls {
-                MapUserLocationButton()
-                MapCompass()
-                MapScaleView()
-            }
-            .ignoresSafeArea(edges: showsBanner ? [] : .bottom)
-
-            VStack(spacing: 12) {
-                if pharmacies.isEmpty {
-                    EmptyStateView(
-                        title: "Haritada sonuç yok",
-                        message: "Önce eczane araması yaparak haritada konumları görebilirsiniz.",
-                        systemImage: "map"
-                    )
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
-                    .padding()
-                }
-
-                if let selectedPharmacy {
-                    selectedPreview(selectedPharmacy)
-                        .padding(.horizontal)
-                }
-
-                if showsBanner {
-                    BannerAdView()
-                        .padding(.bottom, 8)
-                }
-            }
+        }
+        .mapControls {
+            MapUserLocationButton()
+            MapCompass()
+            MapScaleView()
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            mapBottomOverlay
         }
         .navigationTitle("Harita")
         .navigationBarTitleDisplayMode(.inline)
@@ -61,6 +42,34 @@ struct PharmacyMapView: View {
         .onAppear {
             updateCamera()
         }
+    }
+
+    @ViewBuilder
+    private var mapBottomOverlay: some View {
+        VStack(spacing: 12) {
+            if pharmacies.isEmpty {
+                EmptyStateView(
+                    title: "Haritada sonuç yok",
+                    message: "Önce arama yaparak haritada konumları görebilirsiniz.",
+                    systemImage: "map"
+                )
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
+                .padding(.horizontal)
+            }
+
+            if let selectedPharmacy {
+                selectedPreview(selectedPharmacy)
+                    .padding(.horizontal)
+            }
+
+            if showsBanner {
+                BannerAdView()
+                    .frame(height: mapBannerHeight)
+                    .frame(maxWidth: .infinity)
+                    .clipped()
+            }
+        }
+        .padding(.bottom, 8)
     }
 
     private func selectedPreview(_ pharmacy: Pharmacy) -> some View {

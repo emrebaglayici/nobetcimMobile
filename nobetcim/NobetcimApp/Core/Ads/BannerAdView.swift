@@ -2,6 +2,7 @@ import SwiftUI
 
 #if canImport(GoogleMobileAds)
 import GoogleMobileAds
+import UIKit
 
 struct BannerAdView: UIViewRepresentable {
     let adUnitID: String
@@ -18,11 +19,26 @@ struct BannerAdView: UIViewRepresentable {
             .flatMap(\.windows)
             .first { $0.isKeyWindow }?
             .rootViewController
+        banner.translatesAutoresizingMaskIntoConstraints = false
         banner.load(Request())
         return banner
     }
 
-    func updateUIView(_ uiView: BannerView, context: Context) {}
+    func updateUIView(_ uiView: BannerView, context: Context) {
+        if uiView.rootViewController == nil {
+            uiView.rootViewController = UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .flatMap(\.windows)
+                .first { $0.isKeyWindow }?
+                .rootViewController
+        }
+    }
+
+    static func sizeThatFits(_ proposal: ProposedViewSize, uiView: BannerView, context: Context) -> CGSize? {
+        let width = proposal.width ?? UIScreen.main.bounds.width
+        let height = AdSizeBanner.size.height
+        return CGSize(width: width, height: height)
+    }
 }
 #else
 struct BannerAdView: View {

@@ -156,7 +156,7 @@ struct PharmacyDetailView: View {
 
     private var warning: some View {
         Label(
-            "Bilgiler kaynak verilerden alınır. Gitmeden önce eczane ile iletişime geçmeniz önerilir.",
+            "Bilgiler kaynak verilerden alınır. Gitmeden önce işletme ile iletişime geçmeniz önerilir.",
             systemImage: "info.circle.fill"
         )
         .font(.footnote)

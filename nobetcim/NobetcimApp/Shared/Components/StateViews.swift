@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct LoadingStateView: View {
-    var message = "Nöbetçi eczaneler yükleniyor..."
+    var message = "Yükleniyor..."
 
     var body: some View {
         VStack(spacing: 14) {

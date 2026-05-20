@@ -67,7 +67,7 @@ struct RootTabView: View {
     }
 }
 
-private enum AppTab: Hashable {
+enum AppTab: Hashable {
     case pharmacies
     case map
     case more

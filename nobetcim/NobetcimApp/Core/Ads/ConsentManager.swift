@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 #if canImport(UserMessagingPlatform)
-import UserMessagingPlatform
+@preconcurrency import UserMessagingPlatform
 #endif
 
 @MainActor
@@ -22,38 +22,41 @@ final class ConsentManager {
         guard !hasStarted else { return }
         hasStarted = true
 
+        // UMP: simülatörde CoreTelephony/WebKit gürültüsü ve yapılandırma farkları yaygın; üretim rızasını gerçek cihazda doğrula.
         #if canImport(UserMessagingPlatform)
+        #if !targetEnvironment(simulator)
         await requestUMPConsent()
+        #endif
         #endif
     }
 
     #if canImport(UserMessagingPlatform)
     private func requestUMPConsent() async {
+        // AdMob → Gizlilik ve mesajlaşma: formlar tanımlı değilse SDK hata verir (sessizce yutulur).
         let parameters = RequestParameters()
         let consentInfo = ConsentInformation.shared
 
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
             consentInfo.requestConsentInfoUpdate(with: parameters) { error in
-                if let error {
-                    #if DEBUG
-                    print("UMP consent info update failed:", error.localizedDescription)
-                    #endif
-                    continuation.resume()
-                    return
-                }
+                Task { @MainActor in
+                    if error != nil {
+                        continuation.resume()
+                        return
+                    }
 
-                guard consentInfo.formStatus == .available else {
-                    continuation.resume()
-                    return
-                }
+                    guard consentInfo.formStatus == .available else {
+                        continuation.resume()
+                        return
+                    }
 
-                guard let presenter = Self.topViewController() else {
-                    continuation.resume()
-                    return
-                }
+                    guard let presenter = Self.topViewController() else {
+                        continuation.resume()
+                        return
+                    }
 
-                ConsentForm.loadAndPresentIfRequired(from: presenter) { _ in
-                    continuation.resume()
+                    ConsentForm.loadAndPresentIfRequired(from: presenter) { _ in
+                        continuation.resume()
+                    }
                 }
             }
         }

@@ -26,7 +26,7 @@ struct SettingsView: View {
             }
 
             Section("Bilgilendirme") {
-                Text("Nöbetçi eczane bilgileri kaynak verilerden alınır. Acil durumlarda gitmeden önce ilgili eczane ile iletişime geçmeniz önerilir.")
+                Text("Gösterilen kayıtlar kaynak verilere dayanır; adres, mesafe ve iletişim bilgileri hatalı veya güncel olmayabilir. Gitmeden önce ilgili işletmeyi aramanız önerilir. Tıbbi acil durumlarda 112 ve yetkili kurumlara başvurun.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }

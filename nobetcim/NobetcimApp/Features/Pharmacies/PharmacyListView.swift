@@ -40,7 +40,7 @@ struct PharmacyListView: View {
             } else if pharmacies.isEmpty {
                 EmptyStateView(
                     title: "Arama yapın",
-                    message: "Konumunuza göre veya il / ilçe seçerek nöbetçi eczaneleri listeleyin.",
+                    message: "Konumunuza göre veya il / ilçe seçerek arama yapın. Şu an nöbetçi eczaneler listelenir.",
                     systemImage: "cross.case.fill"
                 )
             } else {

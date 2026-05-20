@@ -20,8 +20,10 @@ final class InterstitialAdManager: ObservableObject {
     func load() {
         #if canImport(GoogleMobileAds)
         InterstitialAd.load(with: AppConfig.interstitialAdUnitID, request: Request()) { [weak self] ad, _ in
-            Task { @MainActor in
-                self?.interstitial = ad
+            guard let ad else { return }
+            Task { @MainActor [weak self, ad] in
+                guard let self else { return }
+                self.interstitial = ad
             }
         }
         #endif

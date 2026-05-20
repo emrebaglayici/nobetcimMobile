@@ -35,7 +35,7 @@ struct HomeView: View {
             Task {
                 await viewModel.loadDirectory()
             }
-            if !viewModel.hasSearched && viewModel.searchMode == .nearby {
+            if !viewModel.hasSearched, viewModel.searchMode == .nearby {
                 await performSearch()
             }
         }

@@ -78,7 +78,7 @@ struct NearestPharmacyWidgetView: View {
                         .font(.caption.weight(.bold))
                         .frame(width: 24, height: 24)
                         .background(Color(red: 196 / 255, green: 30 / 255, blue: 58 / 255), in: Circle())
-                    Text("En Yakın Eczane")
+                    Text("En yakın kayıt")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                     Spacer(minLength: 0)
@@ -102,9 +102,9 @@ struct NearestPharmacyWidgetView: View {
                 Image(systemName: "location.circle.fill")
                     .font(.title2)
                     .foregroundStyle(Color(red: 196 / 255, green: 30 / 255, blue: 58 / 255))
-                Text("Yakındaki eczane")
+                Text("Nöbetçim")
                     .font(.headline)
-                Text("Uygulamayı açıp konumuna göre arama yapınca burada gösterilecek.")
+                Text("Uygulamayı açıp arama yaptığınızda özet burada görünür.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -154,8 +154,8 @@ struct NobetcimWidget: Widget {
         StaticConfiguration(kind: kind, provider: NearestPharmacyProvider()) { entry in
             NearestPharmacyWidgetView(entry: entry)
         }
-        .configurationDisplayName("Yakındaki Eczane")
-        .description("Konumuna göre bulunan en yakın nöbetçi eczaneyi gösterir.")
+        .configurationDisplayName("Nöbetçim")
+        .description("Uygulamada aradığınız nöbetçi eczane özetini ana ekranda gösterir.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }

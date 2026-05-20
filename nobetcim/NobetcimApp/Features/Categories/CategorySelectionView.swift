@@ -3,8 +3,9 @@ import SwiftUI
 struct CategorySelectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Hizmetler")
+            Text("Özellikler")
                 .font(.headline)
+
             ForEach(DutyCategory.allCases) { category in
                 HStack {
                     Image(systemName: category.systemImage)
@@ -26,6 +27,11 @@ struct CategorySelectionView: View {
                 .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
                 .opacity(category.isAvailable ? 1 : 0.62)
             }
+
+            Text("Nöbetçim, yerel hizmetleri tek çatı altında sunmayı hedefler; yeni kategoriler güncellemelerle eklenecek.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }
