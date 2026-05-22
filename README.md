@@ -1,4 +1,4 @@
-# Nöbetçim (iOS)
+# Nöbetçim Cebinde (iOS)
 
 Yerel hizmet ve işletme bilgilerine odaklanan iOS uygulaması; şu an nöbetçi eczane aramasını sunar, kapsam zamanla genişleyebilir. Web: [nobetcim.info](https://nobetcim.info/)
 

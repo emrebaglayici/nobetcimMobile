@@ -1,7 +1,7 @@
 import Foundation
 
 enum AppConfig {
-    static let appName = "Nöbetçim"
+    static let appName = "Nöbetçim Cebinde"
     static let supportEmail = "destek@nobetcim.info"
 
     static var appGroupID: String {

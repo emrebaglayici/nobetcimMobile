@@ -27,7 +27,7 @@ struct HomeView: View {
         .refreshable {
             await performSearch(forceRefresh: true, isPullToRefresh: true)
         }
-        .navigationTitle("Nöbetçim")
+        .navigationTitle(AppConfig.appName)
         .navigationBarTitleDisplayMode(.inline)
         .task {
             interstitialAdManager.load()

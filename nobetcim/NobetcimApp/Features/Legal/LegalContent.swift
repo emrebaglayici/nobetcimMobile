@@ -5,7 +5,7 @@ enum LegalContent {
         LegalSection(
             heading: "1. Veri sorumlusu ve kapsam",
             paragraphs: [
-                "Bu politika, Nöbetçim iOS uygulaması ve nobetcim.info alan adı altındaki hizmetler için geçerlidir. Platform; yerel hizmet ve işletme bilgilerine (bugün ağırlıklı olarak nöbetçi eczaneler) erişimi kolaylaştırmayı amaçlar."
+                "Bu politika, Nöbetçim Cebinde iOS uygulaması ve nobetcim.info alan adı altındaki hizmetler için geçerlidir. Platform; yerel hizmet ve işletme bilgilerine (bugün ağırlıklı olarak nöbetçi eczaneler) erişimi kolaylaştırmayı amaçlar."
             ]
         ),
         LegalSection(
@@ -48,7 +48,7 @@ enum LegalContent {
         LegalSection(
             heading: "1. Taraflar ve kabul",
             paragraphs: [
-                "Bu kullanım koşulları, Nöbetçim iOS uygulamasını ve nobetcim.info hizmetlerini kullanan herkes için geçerlidir. Uygulamayı kullanmaya devam etmeniz, bu koşulları okuduğunuzu ve kabul ettiğinizi ifade eder."
+                "Bu kullanım koşulları, Nöbetçim Cebinde iOS uygulamasını ve nobetcim.info hizmetlerini kullanan herkes için geçerlidir. Uygulamayı kullanmaya devam etmeniz, bu koşulları okuduğunuzu ve kabul ettiğinizi ifade eder."
             ]
         ),
         LegalSection(
@@ -61,7 +61,7 @@ enum LegalContent {
             heading: "3. Bilgilerin doğruluğu ve sorumluluk reddi",
             paragraphs: [
                 "Listeler, mesafeler ve iletişim bilgileri otomatik işleme veya üçüncü taraf kaynaklara dayanabilir. Yanlış, eksik veya güncelliğini yitirmiş veriler oluşabilir. Tıbbi acil durumlarda 112 ve yetkili sağlık kuruluşlarına başvurunuz. İlaç ve tedavi için eczacı veya hekiminize danışınız.",
-                "Nöbetçim, bu uygulamadaki bilgilere dayanarak yapılan işlemlerden doğrudan veya dolaylı zararlardan sorumlu tutulamaz."
+                "Nöbetçim Cebinde, bu uygulamadaki bilgilere dayanarak yapılan işlemlerden doğrudan veya dolaylı zararlardan sorumlu tutulamaz."
             ]
         ),
         LegalSection(
@@ -96,7 +96,7 @@ enum LegalContent {
         LegalSection(
             heading: "Veri sorumlusu",
             paragraphs: [
-                "Nöbetçim uygulamasının yürütücüsü, 6698 sayılı Kanun (“KVKK”) uyarınca veri sorumlusu sıfatıyla kişisel verilerinizi aşağıda özetlenen çerçevede işleyebilir. Başvurular için: destek@nobetcim.info"
+                "Nöbetçim Cebinde uygulamasının yürütücüsü, 6698 sayılı Kanun (“KVKK”) uyarınca veri sorumlusu sıfatıyla kişisel verilerinizi aşağıda özetlenen çerçevede işleyebilir. Başvurular için: destek@nobetcim.info"
             ]
         ),
         LegalSection(

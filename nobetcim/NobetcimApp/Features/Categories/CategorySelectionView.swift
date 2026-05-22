@@ -28,7 +28,7 @@ struct CategorySelectionView: View {
                 .opacity(category.isAvailable ? 1 : 0.62)
             }
 
-            Text("Nöbetçim, yerel hizmetleri tek çatı altında sunmayı hedefler; yeni kategoriler güncellemelerle eklenecek.")
+            Text("Nöbetçim Cebinde, yerel hizmetleri tek çatı altında sunmayı hedefler; yeni kategoriler güncellemelerle eklenecek.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
