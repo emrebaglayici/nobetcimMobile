@@ -29,7 +29,7 @@ struct Pharmacy: Identifiable, Codable, Hashable {
     }
 
     var displayDistrict: String {
-        district.localizedTitleCasedTurkish
+        district.canonicalDistrictName
     }
 
     var displayAddress: String {

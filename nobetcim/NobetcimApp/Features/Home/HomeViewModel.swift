@@ -43,19 +43,12 @@ final class PharmacyViewModel: ObservableObject {
 
     func loadDistrictsForSelectedCity() async {
         guard !selectedCity.isEmpty else { return }
-        let districtNames = await repository.loadDistricts(for: selectedCity, forceRefresh: false)
-        guard !districtNames.isEmpty else { return }
-
-        if let index = locationDirectory.firstIndex(where: { $0.city == selectedCity }) {
-            let current = locationDirectory[index]
-            locationDirectory[index] = CityDistrict(
-                city: current.city,
-                citySlug: current.citySlug,
-                districts: districtNames,
-                districtSlugs: current.districtSlugs
-            )
+        _ = await repository.loadDistricts(for: selectedCity, forceRefresh: true)
+        let refreshedDirectory = await repository.loadDirectory(forceRefresh: false)
+        if let updated = refreshedDirectory.first(where: { $0.city.matchesTurkish(selectedCity) }),
+           let index = locationDirectory.firstIndex(where: { $0.city.matchesTurkish(selectedCity) }) {
+            locationDirectory[index] = updated
         }
-
         if !districts.contains(selectedDistrict) {
             selectedDistrict = ""
         }
@@ -104,10 +97,12 @@ final class PharmacyViewModel: ObservableObject {
                     forceRefresh: forceRefresh
                 )
             case .city:
+                await loadDistrictsForSelectedCity()
                 pharmacies = try await repository.fetchByCity(
                     city: selectedCity,
                     district: selectedDistrict.isEmpty ? nil : selectedDistrict,
-                    forceRefresh: forceRefresh
+                    forceRefresh: forceRefresh,
+                    directory: locationDirectory
                 )
             }
 

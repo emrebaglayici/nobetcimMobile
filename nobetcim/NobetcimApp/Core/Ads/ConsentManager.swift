@@ -19,6 +19,7 @@ final class ConsentManager {
     }
 
     func requestConsentIfNeeded() async {
+        guard AppConfig.adsEnabled else { return }
         guard !hasStarted else { return }
         hasStarted = true
 

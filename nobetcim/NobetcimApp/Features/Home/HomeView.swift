@@ -6,6 +6,8 @@ struct HomeView: View {
     @EnvironmentObject private var interstitialAdManager: InterstitialAdManager
     @Environment(\.scenePhase) private var scenePhase
     @State private var isSearchOptionsExpanded = false
+    @State private var isCityPickerPresented = false
+    @State private var isDistrictPickerPresented = false
 
     var body: some View {
         ScrollView {
@@ -30,11 +32,11 @@ struct HomeView: View {
         .navigationTitle(AppConfig.appName)
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            interstitialAdManager.load()
-            configureLocationMonitoring()
-            Task {
-                await viewModel.loadDirectory()
+            if AppConfig.adsEnabled {
+                interstitialAdManager.load()
             }
+            configureLocationMonitoring()
+            await viewModel.loadDirectory()
             if !viewModel.hasSearched, viewModel.searchMode == .nearby {
                 await performSearch()
             }
@@ -52,10 +54,33 @@ struct HomeView: View {
                 return
             }
             configureLocationMonitoring()
-            interstitialAdManager.recordAppBecameActive()
+            if AppConfig.adsEnabled {
+                interstitialAdManager.recordAppBecameActive()
+            }
             Task {
                 await viewModel.refreshNearbyForWidgetIfNeeded(locationManager: locationManager)
             }
+        }
+        .sheet(isPresented: $isCityPickerPresented) {
+            LocationOptionSheet(
+                title: "İl seçin",
+                options: viewModel.cities,
+                selection: $viewModel.selectedCity
+            )
+            .onDisappear {
+                viewModel.updateDistrictForSelectedCity()
+                Task {
+                    await viewModel.loadDistrictsForSelectedCity()
+                }
+            }
+        }
+        .sheet(isPresented: $isDistrictPickerPresented) {
+            LocationOptionSheet(
+                title: "İlçe seçin",
+                options: viewModel.districts,
+                includesAllDistrictsOption: true,
+                selection: $viewModel.selectedDistrict
+            )
         }
     }
 
@@ -106,35 +131,20 @@ struct HomeView: View {
 
                     if viewModel.searchMode == .city {
                         VStack(spacing: 8) {
-                            pickerRow(title: "İl") {
-                                Picker("İl", selection: $viewModel.selectedCity) {
-                                    if viewModel.cities.isEmpty {
-                                        Text("İller yükleniyor").tag(viewModel.selectedCity)
-                                    } else {
-                                        ForEach(viewModel.cities, id: \.self) { city in
-                                            Text(city).tag(city)
-                                        }
-                                    }
-                                }
+                            LocationPickerRow(
+                                label: "İl",
+                                value: viewModel.cities.isEmpty ? "Yükleniyor…" : viewModel.selectedCity,
+                                isLoading: viewModel.cities.isEmpty
+                            ) {
+                                isCityPickerPresented = true
                             }
 
-                            pickerRow(title: "İlçe") {
-                                Picker("İlçe", selection: $viewModel.selectedDistrict) {
-                                    Text("Tüm ilçeler").tag("")
-                                    if viewModel.isLoadingDirectory {
-                                        Text("İlçeler yükleniyor").tag("")
-                                    } else {
-                                        ForEach(viewModel.districts, id: \.self) { district in
-                                            Text(district).tag(district)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        .onChange(of: viewModel.selectedCity) {
-                            viewModel.updateDistrictForSelectedCity()
-                            Task {
-                                await viewModel.loadDistrictsForSelectedCity()
+                            LocationPickerRow(
+                                label: "İlçe",
+                                value: districtPickerLabel,
+                                isLoading: viewModel.isLoadingDirectory && viewModel.districts.isEmpty
+                            ) {
+                                isDistrictPickerPresented = true
                             }
                         }
                     }
@@ -163,6 +173,16 @@ struct HomeView: View {
         }
     }
 
+    private var districtPickerLabel: String {
+        if viewModel.isLoadingDirectory, viewModel.districts.isEmpty {
+            return "Yükleniyor…"
+        }
+        if viewModel.selectedDistrict.isEmpty {
+            return "Tüm ilçeler"
+        }
+        return viewModel.selectedDistrict
+    }
+
     private var searchSummaryText: String {
         switch viewModel.searchMode {
         case .nearby:
@@ -179,24 +199,6 @@ struct HomeView: View {
         case .city:
             "Eczane Ara"
         }
-    }
-
-    private func pickerRow<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
-        HStack(spacing: 12) {
-            Text(title)
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.secondary)
-
-            Spacer()
-
-            content()
-                .labelsHidden()
-                .pickerStyle(.menu)
-                .tint(AppTheme.primary)
-        }
-        .padding(.horizontal, 12)
-        .frame(height: 42)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 10))
     }
 
     private func configureLocationMonitoring() {
@@ -219,7 +221,7 @@ struct HomeView: View {
             forceRefresh: forceRefresh,
             isPullToRefresh: isPullToRefresh
         )
-        if didFindResults {
+        if didFindResults, AppConfig.adsEnabled {
             interstitialAdManager.recordSuccessfulSearch()
         }
     }

@@ -18,6 +18,7 @@ final class InterstitialAdManager: ObservableObject {
     #endif
 
     func load() {
+        guard AppConfig.adsEnabled else { return }
         #if canImport(GoogleMobileAds)
         InterstitialAd.load(with: AppConfig.interstitialAdUnitID, request: Request()) { [weak self] ad, _ in
             guard let ad else { return }
@@ -30,6 +31,7 @@ final class InterstitialAdManager: ObservableObject {
     }
 
     func recordSuccessfulSearch() {
+        guard AppConfig.adsEnabled else { return }
         engagementCount += 1
         if engagementCount % 2 == 0 {
             presentIfReady()
@@ -37,6 +39,7 @@ final class InterstitialAdManager: ObservableObject {
     }
 
     func recordTabChange() {
+        guard AppConfig.adsEnabled else { return }
         engagementCount += 1
         if engagementCount % 3 == 0 {
             presentIfReady()
@@ -44,6 +47,7 @@ final class InterstitialAdManager: ObservableObject {
     }
 
     func recordAppBecameActive() {
+        guard AppConfig.adsEnabled else { return }
         engagementCount += 1
         if engagementCount % 5 == 0 {
             presentIfReady()

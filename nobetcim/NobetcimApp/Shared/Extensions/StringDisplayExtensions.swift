@@ -15,4 +15,9 @@ extension String {
       }
       .joined(separator: " ")
   }
+
+  func matchesTurkish(_ other: String) -> Bool {
+    folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "tr_TR")) ==
+      other.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "tr_TR"))
+  }
 }

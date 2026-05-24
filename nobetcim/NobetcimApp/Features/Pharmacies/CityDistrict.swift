@@ -46,7 +46,13 @@ struct CityDistrict: Identifiable, Codable, Hashable {
 
     func slug(forDistrict district: String?) -> String? {
         guard let district, !district.isEmpty else { return nil }
-        return districtSlugs[district] ?? district.slugifiedTurkish
+        let canonical = district.canonicalDistrictName
+        if let slug = districtSlugs[canonical] { return slug }
+        if let slug = districtSlugs[district] { return slug }
+        if let match = districtSlugs.first(where: { $0.key.canonicalDistrictName.matchesTurkish(canonical) }) {
+            return match.value
+        }
+        return canonical.slugifiedTurkish
     }
 }
 
@@ -141,7 +147,16 @@ struct CityDistrictResponse: Decodable {
 extension Array where Element == CityDistrict {
     var cleaned: [CityDistrict] {
         filter { !$0.city.isEmpty }
-            .map { CityDistrict(city: $0.city, citySlug: $0.citySlug, districts: Swift.Array(Swift.Set<String>($0.districts.filter { !$0.isEmpty })).sortedTurkish, districtSlugs: $0.districtSlugs) }
+            .map { entry in
+                let infos = entry.districts.map { DistrictInfo(name: $0, slug: entry.districtSlugs[$0]) }
+                let catalog = DistrictCatalog.canonicalize(infos)
+                return CityDistrict(
+                    city: entry.city,
+                    citySlug: entry.citySlug,
+                    districts: catalog.names,
+                    districtSlugs: catalog.slugs
+                )
+            }
             .sorted { $0.city.localizedStandardCompare($1.city) == .orderedAscending }
     }
 }

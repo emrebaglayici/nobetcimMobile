@@ -3,7 +3,7 @@ import Foundation
 
 protocol PharmacyRepositoryProtocol {
     func fetchNearby(latitude: CLLocationDegrees, longitude: CLLocationDegrees, forceRefresh: Bool) async throws -> [Pharmacy]
-    func fetchByCity(city: String, district: String?, forceRefresh: Bool) async throws -> [Pharmacy]
+    func fetchByCity(city: String, district: String?, forceRefresh: Bool, directory: [CityDistrict]?) async throws -> [Pharmacy]
     func loadDirectory(forceRefresh: Bool) async -> [CityDistrict]
     func loadDistricts(for city: String, forceRefresh: Bool) async -> [String]
 }
@@ -16,7 +16,7 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
     init(
         pharmacyService: PharmacyServiceProtocol = PharmacyService(),
         directoryService: LocationDirectoryServiceProtocol = LocationDirectoryService(),
-        directoryCache: PersistentCacheStore<[CityDistrict]> = PersistentCacheStore(key: "nobetcim.location.directory")
+        directoryCache: PersistentCacheStore<[CityDistrict]> = PersistentCacheStore(key: "nobetcim.location.directory.v2")
     ) {
         self.pharmacyService = pharmacyService
         self.directoryService = directoryService
@@ -52,11 +52,16 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
         }
     }
 
-    func fetchByCity(city: String, district: String?, forceRefresh: Bool = false) async throws -> [Pharmacy] {
-        let cityInfo = cityInfo(for: city)
+    func fetchByCity(
+        city: String,
+        district: String?,
+        forceRefresh: Bool = false,
+        directory: [CityDistrict]? = nil
+    ) async throws -> [Pharmacy] {
+        let cityInfo = cityInfo(for: city, in: directory)
         let citySlug = cityInfo?.citySlug ?? city.slugifiedTurkish
-        let districtSlug = cityInfo?.slug(forDistrict: district) ?? district?.slugifiedTurkish
-        let districtCachePart = districtSlug ?? "all"
+        let canonicalDistrict = district.map { $0.canonicalDistrictName }
+        let districtCachePart = canonicalDistrict?.slugifiedTurkish ?? "all"
         let cache = DailyCacheStore<[Pharmacy]>(key: "nobetcim.daily.nobetci.\(citySlug).\(districtCachePart)")
 
         if !forceRefresh, let cached = cache.loadToday() {
@@ -70,7 +75,11 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
             #if DEBUG
             print("NobetEcza daily cache miss: \(citySlug)/\(districtCachePart)")
             #endif
-            let remote = try await pharmacyService.fetchDutyPharmacies(citySlug: citySlug, districtSlug: districtSlug)
+            let remote = try await fetchDutyPharmacies(
+                citySlug: citySlug,
+                district: canonicalDistrict,
+                cityInfo: cityInfo
+            )
             let sorted = remote.sortedByDistrictAndName()
             if !sorted.isEmpty {
                 cache.saveToday(sorted)
@@ -109,35 +118,67 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
     }
 
     func loadDistricts(for city: String, forceRefresh: Bool = false) async -> [String] {
-        guard let cityInfo = cityInfo(for: city) else { return [] }
+        guard let cityInfo = cityInfo(for: city, in: nil) else { return [] }
         if !forceRefresh, !cityInfo.districts.isEmpty {
             return cityInfo.districts
         }
 
-        let cache = PersistentCacheStore<[DistrictInfo]>(key: "nobetcim.location.districts.\(cityInfo.citySlug)")
+        let cache = PersistentCacheStore<[DistrictInfo]>(key: "nobetcim.location.districts.v2.\(cityInfo.citySlug)")
         if !forceRefresh, let cached = cache.load(), !cached.isEmpty {
-            mergeDistricts(cached, into: cityInfo)
-            return cached.map(\.name).sortedTurkish
+            let catalog = DistrictCatalog.canonicalize(cached)
+            mergeDistricts(catalog, into: cityInfo)
+            return catalog.names
         }
 
         do {
             let remote = try await directoryService.fetchDistricts(citySlug: cityInfo.citySlug)
             if !remote.isEmpty {
                 cache.save(remote)
-                mergeDistricts(remote, into: cityInfo)
-                return remote.map(\.name).sortedTurkish
+                let catalog = DistrictCatalog.canonicalize(remote)
+                mergeDistricts(catalog, into: cityInfo)
+                return catalog.names
             }
         } catch {
             #if DEBUG
             print("District fetch failed:", error)
             #endif
             if let cached = cache.load(), !cached.isEmpty, error.prefersStaleCacheFallback {
-                mergeDistricts(cached, into: cityInfo)
-                return cached.map(\.name).sortedTurkish
+                let catalog = DistrictCatalog.canonicalize(cached)
+                mergeDistricts(catalog, into: cityInfo)
+                return catalog.names
             }
         }
 
         return []
+    }
+
+    /// İlçe seçildiğinde tüm alt bölgeleri (Buca 1, 2…) kapsamak için şehir geneli çekilip canonical ada göre filtrelenir.
+    private func fetchDutyPharmacies(
+        citySlug: String,
+        district: String?,
+        cityInfo: CityDistrict?
+    ) async throws -> [Pharmacy] {
+        guard let district, !district.isEmpty else {
+            return try await pharmacyService.fetchDutyPharmacies(citySlug: citySlug, districtSlug: nil)
+        }
+
+        let districtSlug = cityInfo?.slug(forDistrict: district)
+        if let districtSlug {
+            let scoped = try await pharmacyService.fetchDutyPharmacies(
+                citySlug: citySlug,
+                districtSlug: districtSlug
+            )
+            if !scoped.isEmpty {
+                return scoped.filter {
+                    $0.district.canonicalDistrictName.matchesTurkish(district)
+                }
+            }
+        }
+
+        let cityWide = try await pharmacyService.fetchDutyPharmacies(citySlug: citySlug, districtSlug: nil)
+        return cityWide.filter {
+            $0.district.canonicalDistrictName.matchesTurkish(district)
+        }
     }
 
     private func finishNearby(sorted: [Pharmacy], anchor: CLLocationCoordinate2D) -> [Pharmacy] {
@@ -149,19 +190,23 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
 
-    private func cityInfo(for city: String) -> CityDistrict? {
-        directoryCache.load()?.first { $0.city.matchesTurkish(city) || $0.citySlug == city.slugifiedTurkish }
+    private func cityInfo(for city: String, in directory: [CityDistrict]? = nil) -> CityDistrict? {
+        let sources = [directory, directoryCache.load()].compactMap { $0 }.filter { !$0.isEmpty }
+        for list in sources {
+            if let match = list.first(where: { $0.city.matchesTurkish(city) || $0.citySlug == city.slugifiedTurkish }) {
+                return match
+            }
+        }
+        return nil
     }
 
-    private func mergeDistricts(_ districts: [DistrictInfo], into cityInfo: CityDistrict) {
+    private func mergeDistricts(_ catalog: (names: [String], slugs: [String: String]), into cityInfo: CityDistrict) {
         var directory = directoryCache.load() ?? []
-        let districtNames = districts.map(\.name).sortedTurkish
-        let districtSlugs = Dictionary(uniqueKeysWithValues: districts.map { ($0.name, $0.slug) })
         let updated = CityDistrict(
             city: cityInfo.city,
             citySlug: cityInfo.citySlug,
-            districts: districtNames,
-            districtSlugs: districtSlugs
+            districts: catalog.names,
+            districtSlugs: catalog.slugs
         )
 
         if let index = directory.firstIndex(where: { $0.citySlug == cityInfo.citySlug }) {
@@ -195,13 +240,6 @@ private extension Array where Element == Pharmacy {
             }
             return $0.district.localizedStandardCompare($1.district) == .orderedAscending
         }
-    }
-}
-
-private extension String {
-    func matchesTurkish(_ other: String) -> Bool {
-        folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "tr_TR")) ==
-            other.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "tr_TR"))
     }
 }
 

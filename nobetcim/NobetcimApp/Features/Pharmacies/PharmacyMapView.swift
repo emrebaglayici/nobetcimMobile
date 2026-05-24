@@ -3,7 +3,7 @@ import SwiftUI
 
 struct PharmacyMapView: View {
     let pharmacies: [Pharmacy]
-    var showsBanner = true
+    var showsBanner = AppConfig.adsEnabled
 
     @State private var selectedPharmacyID: Pharmacy.ID?
     @State private var position: MapCameraPosition = .automatic

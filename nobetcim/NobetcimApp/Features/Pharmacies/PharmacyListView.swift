@@ -66,12 +66,12 @@ struct PharmacyListView: View {
         }
     }
 
-    /// Inserts one ad card after every two pharmacy entries.
+    /// Inserts one ad card after every two pharmacy entries when ads are enabled.
     static func makeFeed(from pharmacies: [Pharmacy]) -> [PharmacyFeedItem] {
         var items: [PharmacyFeedItem] = []
         for (index, pharmacy) in pharmacies.enumerated() {
             items.append(.pharmacy(pharmacy))
-            if (index + 1) % 2 == 0 {
+            if AppConfig.adsEnabled, (index + 1) % 2 == 0 {
                 items.append(.advertisement(id: "feed-ad-\(index / 2)"))
             }
         }

@@ -6,7 +6,9 @@ struct NobetcimApp: App {
     @StateObject private var interstitialAdManager = InterstitialAdManager()
 
     init() {
-        AdMobManager.shared.configure()
+        if AppConfig.adsEnabled {
+            AdMobManager.shared.configure()
+        }
     }
 
     var body: some Scene {
@@ -59,10 +61,14 @@ struct RootTabView: View {
             .tag(AppTab.more)
         }
         .task {
-            await ConsentManager.shared.requestConsentIfNeeded()
+            if AppConfig.adsEnabled {
+                await ConsentManager.shared.requestConsentIfNeeded()
+            }
         }
         .onChange(of: selectedTab) { _, _ in
-            interstitialAdManager.recordTabChange()
+            if AppConfig.adsEnabled {
+                interstitialAdManager.recordTabChange()
+            }
         }
     }
 }
