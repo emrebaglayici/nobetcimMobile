@@ -175,9 +175,10 @@
 				};
 			};
 			buildConfigurationList = 0A65842A2FB30DF2005347A8 /* Build configuration list for PBXProject "nobetcim" */;
-			developmentRegion = en;
+			developmentRegion = tr;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				tr,
 				en,
 				Base,
 			);
