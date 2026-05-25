@@ -16,7 +16,7 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
     init(
         pharmacyService: PharmacyServiceProtocol = PharmacyService(),
         directoryService: LocationDirectoryServiceProtocol = LocationDirectoryService(),
-        directoryCache: PersistentCacheStore<[CityDistrict]> = PersistentCacheStore(key: "nobetcim.location.directory.v2")
+        directoryCache: PersistentCacheStore<[CityDistrict]> = PersistentCacheStore(key: "nobetcim.location.directory.v3")
     ) {
         self.pharmacyService = pharmacyService
         self.directoryService = directoryService
@@ -94,23 +94,13 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
     }
 
     func loadDirectory(forceRefresh: Bool = false) async -> [CityDistrict] {
+        let bundled = TurkeyLocationCatalog.allCities()
+        if !bundled.isEmpty {
+            directoryCache.save(bundled)
+            return bundled
+        }
+
         if !forceRefresh, let cached = directoryCache.load(), !cached.isEmpty {
-            return cached
-        }
-
-        do {
-            let remote = try await directoryService.fetchCities()
-            if !remote.isEmpty {
-                directoryCache.save(remote)
-                return remote
-            }
-        } catch {
-            #if DEBUG
-            print("Location directory fetch failed:", error)
-            #endif
-        }
-
-        if let cached = directoryCache.load(), !cached.isEmpty {
             return cached
         }
 
@@ -118,38 +108,8 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
     }
 
     func loadDistricts(for city: String, forceRefresh: Bool = false) async -> [String] {
-        guard let cityInfo = cityInfo(for: city, in: nil) else { return [] }
-        if !forceRefresh, !cityInfo.districts.isEmpty {
-            return cityInfo.districts
-        }
-
-        let cache = PersistentCacheStore<[DistrictInfo]>(key: "nobetcim.location.districts.v2.\(cityInfo.citySlug)")
-        if !forceRefresh, let cached = cache.load(), !cached.isEmpty {
-            let catalog = DistrictCatalog.canonicalize(cached)
-            mergeDistricts(catalog, into: cityInfo)
-            return catalog.names
-        }
-
-        do {
-            let remote = try await directoryService.fetchDistricts(citySlug: cityInfo.citySlug)
-            if !remote.isEmpty {
-                cache.save(remote)
-                let catalog = DistrictCatalog.canonicalize(remote)
-                mergeDistricts(catalog, into: cityInfo)
-                return catalog.names
-            }
-        } catch {
-            #if DEBUG
-            print("District fetch failed:", error)
-            #endif
-            if let cached = cache.load(), !cached.isEmpty, error.prefersStaleCacheFallback {
-                let catalog = DistrictCatalog.canonicalize(cached)
-                mergeDistricts(catalog, into: cityInfo)
-                return catalog.names
-            }
-        }
-
-        return []
+        _ = forceRefresh
+        return TurkeyLocationCatalog.districts(for: city)
     }
 
     /// İlçe seçildiğinde tüm alt bölgeleri (Buca 1, 2…) kapsamak için şehir geneli çekilip canonical ada göre filtrelenir.
@@ -191,6 +151,9 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
     }
 
     private func cityInfo(for city: String, in directory: [CityDistrict]? = nil) -> CityDistrict? {
+        if let match = TurkeyLocationCatalog.entry(for: city) {
+            return match
+        }
         let sources = [directory, directoryCache.load()].compactMap { $0 }.filter { !$0.isEmpty }
         for list in sources {
             if let match = list.first(where: { $0.city.matchesTurkish(city) || $0.citySlug == city.slugifiedTurkish }) {
@@ -198,23 +161,6 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
             }
         }
         return nil
-    }
-
-    private func mergeDistricts(_ catalog: (names: [String], slugs: [String: String]), into cityInfo: CityDistrict) {
-        var directory = directoryCache.load() ?? []
-        let updated = CityDistrict(
-            city: cityInfo.city,
-            citySlug: cityInfo.citySlug,
-            districts: catalog.names,
-            districtSlugs: catalog.slugs
-        )
-
-        if let index = directory.firstIndex(where: { $0.citySlug == cityInfo.citySlug }) {
-            directory[index] = updated
-        } else {
-            directory.append(updated)
-        }
-        directoryCache.save(directory.cleaned)
     }
 }
 

@@ -27,8 +27,8 @@ struct PharmacyListView: View {
 
     var body: some View {
         LazyVStack(spacing: 14) {
-            if isLoading, pharmacies.isEmpty {
-                LoadingStateView()
+            if isLoading {
+                LoadingStateView(message: "En yakın eczane bulunuyor…")
             } else if pharmacies.isEmpty, let errorMessage {
                 ErrorStateView(message: errorMessage, retry: retry)
             } else if pharmacies.isEmpty, hasSearched {
@@ -46,12 +46,6 @@ struct PharmacyListView: View {
             } else {
                 if let errorMessage {
                     ListNoticeBanner(message: errorMessage)
-                }
-
-                if isLoading {
-                    ProgressView()
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 4)
                 }
 
                 ForEach(feedItems) { item in

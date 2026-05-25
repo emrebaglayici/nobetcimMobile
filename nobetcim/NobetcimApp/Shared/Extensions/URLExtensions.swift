@@ -1,5 +1,6 @@
 import CoreLocation
 import Foundation
+import MapKit
 import UIKit
 
 enum AppActions {
@@ -12,10 +13,13 @@ enum AppActions {
 
     static func openAppleMaps(for pharmacy: Pharmacy) {
         guard let coordinate = pharmacy.coordinate else { return }
-        let query = pharmacy.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "Eczane"
-        let urlString = "http://maps.apple.com/?ll=\(coordinate.latitude),\(coordinate.longitude)&q=\(query)"
-        guard let url = URL(string: urlString) else { return }
-        UIApplication.shared.open(url)
+        let destination = MKMapItem(placemark: MKPlacemark(coordinate: coordinate))
+        destination.name = pharmacy.displayName
+        let source = MKMapItem.forCurrentLocation()
+        MKMapItem.openMaps(
+            with: [source, destination],
+            launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving]
+        )
     }
 
     static func openGoogleMaps(for pharmacy: Pharmacy) {

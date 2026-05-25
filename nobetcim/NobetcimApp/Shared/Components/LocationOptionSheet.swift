@@ -26,7 +26,7 @@ struct LocationOptionSheet: View {
                 }
 
                 if options.isEmpty {
-                    Text("Liste yüklenemedi. İnternet bağlantınızı kontrol edip tekrar deneyin.")
+                    Text("İl veya ilçe listesi yüklenemedi.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 } else if filteredOptions.isEmpty {

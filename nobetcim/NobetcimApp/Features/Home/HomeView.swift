@@ -5,7 +5,7 @@ struct HomeView: View {
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject private var interstitialAdManager: InterstitialAdManager
     @Environment(\.scenePhase) private var scenePhase
-    @State private var isSearchOptionsExpanded = false
+    @State private var isSearchOptionsExpanded = true
     @State private var isCityPickerPresented = false
     @State private var isDistrictPickerPresented = false
 
@@ -43,9 +43,16 @@ struct HomeView: View {
         }
         .onChange(of: viewModel.searchMode) {
             configureLocationMonitoring()
-            guard viewModel.searchMode == .city else { return }
             Task {
-                await viewModel.loadDirectory()
+                switch viewModel.searchMode {
+                case .nearby:
+                    viewModel.clearResultsForModeChange()
+                    await performSearch(forceRefresh: true)
+                case .city:
+                    viewModel.clearResultsForModeChange()
+                    await viewModel.loadDirectory()
+                    await viewModel.applyCityFromLocation(locationManager: locationManager)
+                }
             }
         }
         .onChange(of: scenePhase) { _, newPhase in
@@ -69,9 +76,6 @@ struct HomeView: View {
             )
             .onDisappear {
                 viewModel.updateDistrictForSelectedCity()
-                Task {
-                    await viewModel.loadDistrictsForSelectedCity()
-                }
             }
         }
         .sheet(isPresented: $isDistrictPickerPresented) {
@@ -81,6 +85,10 @@ struct HomeView: View {
                 includesAllDistrictsOption: true,
                 selection: $viewModel.selectedDistrict
             )
+            .onDisappear {
+                guard viewModel.searchMode == .city, !viewModel.cities.isEmpty else { return }
+                Task { await performSearch() }
+            }
         }
     }
 

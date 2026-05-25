@@ -34,23 +34,36 @@ final class PharmacyViewModel: ObservableObject {
     }
 
     var districts: [String] {
-        locationDirectory.first { $0.city == selectedCity }?.districts ?? []
+        TurkeyLocationCatalog.districts(for: selectedCity)
+    }
+
+    func clearResultsForModeChange() {
+        pharmacies = []
+        errorMessage = nil
+        hasSearched = false
     }
 
     func updateDistrictForSelectedCity() {
-        selectedDistrict = ""
+        let available = districts
+        if selectedDistrict.isEmpty { return }
+        if !available.contains(where: { $0.matchesTurkish(selectedDistrict) }) {
+            selectedDistrict = ""
+        }
     }
 
-    func loadDistrictsForSelectedCity() async {
-        guard !selectedCity.isEmpty else { return }
-        _ = await repository.loadDistricts(for: selectedCity, forceRefresh: true)
-        let refreshedDirectory = await repository.loadDirectory(forceRefresh: false)
-        if let updated = refreshedDirectory.first(where: { $0.city.matchesTurkish(selectedCity) }),
-           let index = locationDirectory.firstIndex(where: { $0.city.matchesTurkish(selectedCity) }) {
-            locationDirectory[index] = updated
-        }
-        if !districts.contains(selectedDistrict) {
-            selectedDistrict = ""
+    /// Konum izni varsa il alanını cihaz konumuna göre doldurur (ilçe değişmez).
+    func applyCityFromLocation(locationManager: LocationManager) async {
+        guard locationManager.isAuthorized, !locationDirectory.isEmpty else { return }
+
+        do {
+            let location = try await locationManager.requestLocation(preferCached: true)
+            guard let city = try await LocationGeocoder.resolveCity(from: location) else { return }
+            selectedCity = city
+            updateDistrictForSelectedCity()
+        } catch {
+            #if DEBUG
+            print("applyCityFromLocation failed:", error)
+            #endif
         }
     }
 
@@ -62,14 +75,10 @@ final class PharmacyViewModel: ObservableObject {
         let directory = await repository.loadDirectory(forceRefresh: false)
         locationDirectory = directory
 
-        if !directory.contains(where: { $0.city == selectedCity }) {
+        if !directory.contains(where: { $0.city.matchesTurkish(selectedCity) }) {
             selectedCity = directory.first?.city ?? selectedCity
         }
-        if !districts.contains(selectedDistrict) {
-            selectedDistrict = ""
-        }
-
-        await loadDistrictsForSelectedCity()
+        updateDistrictForSelectedCity()
     }
 
     func search(
@@ -79,6 +88,7 @@ final class PharmacyViewModel: ObservableObject {
     ) async -> Bool {
         let hadExistingResults = !pharmacies.isEmpty
         isLoading = true
+        pharmacies = []
         if !isPullToRefresh || !hadExistingResults {
             errorMessage = nil
         }
@@ -91,23 +101,29 @@ final class PharmacyViewModel: ObservableObject {
             switch searchMode {
             case .nearby:
                 let location = try await locationManager.requestLocation(preferCached: isPullToRefresh || !forceRefresh)
-                pharmacies = try await repository.fetchNearby(
+                let nearby = try await repository.fetchNearby(
                     latitude: location.coordinate.latitude,
                     longitude: location.coordinate.longitude,
                     forceRefresh: forceRefresh
                 )
+                pharmacies = try await resolvePharmacyDistances(
+                    nearby,
+                    locationManager: locationManager,
+                    origin: location
+                )
             case .city:
-                await loadDistrictsForSelectedCity()
-                pharmacies = try await repository.fetchByCity(
+                updateDistrictForSelectedCity()
+                let cityResults = try await repository.fetchByCity(
                     city: selectedCity,
                     district: selectedDistrict.isEmpty ? nil : selectedDistrict,
                     forceRefresh: forceRefresh,
                     directory: locationDirectory
                 )
-            }
-
-            if locationDirectory.isEmpty {
-                locationDirectory = pharmacies.derivedDirectory
+                pharmacies = try await resolvePharmacyDistances(
+                    cityResults,
+                    locationManager: locationManager,
+                    origin: nil
+                )
             }
 
             if pharmacies.isEmpty {
@@ -191,6 +207,27 @@ final class PharmacyViewModel: ObservableObject {
         pharmacies = Pharmacy.previews
         hasSearched = true
     }
+
+    /// Yol km'si bitmeden liste yayınlanmaz.
+    private func resolvePharmacyDistances(
+        _ results: [Pharmacy],
+        locationManager: LocationManager,
+        origin: CLLocation?
+    ) async throws -> [Pharmacy] {
+        guard !results.isEmpty else { return results }
+
+        let resolvedOrigin: CLLocation
+        if let origin {
+            resolvedOrigin = origin
+        } else if locationManager.isAuthorized {
+            resolvedOrigin = try await locationManager.requestLocation(preferCached: true)
+        } else {
+            throw LocationError.denied
+        }
+
+        return await PharmacyDistanceCalculator.resolveDistances(results, from: resolvedOrigin)
+    }
+
 }
 
 typealias HomeViewModel = PharmacyViewModel
