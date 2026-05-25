@@ -60,11 +60,22 @@ Release build, anahtar yoksa **Validate API Key** script ile durur.
 
 ## Google AdMob
 
-Reklam kimlikleri **`nobetcim` target → Build Settings** içinde `ADMOB_APP_ID`, `ADMOB_BANNER_ID`, `ADMOB_INTERSTITIAL_ID` olarak tutulur (`project.pbxproj`). Banner ve geçiş birimleri üretim AdMob kimlikleriyle tanımlıdır.
+Reklam kimlikleri **`nobetcim` target → Build Settings** içinde `ADMOB_APP_ID`, `ADMOB_BANNER_ID`, `ADMOB_INTERSTITIAL_ID` olarak tutulur (`project.pbxproj`). Uygulamada reklamlar `AppConfig.adsEnabled = true` ile açıktır.
 
-Geliştirme sırasında [test reklamları](https://developers.google.com/admob/ios/test-ads) kullanmak için cihazı test cihazı olarak kaydedebilir veya geçici olarak test birim kimliklerine dönebilirsiniz.
+### app-ads.txt (mağaza doğrulama)
 
-Yeni birimlerin canlı reklam göstermesi kısa süre gecikebilir; paneldeki **İnceleme gerekli** ve **Gizlilik ve mesajlaşma** adımlarını tamamlayın.
+AdMob, App Store’daki **geliştirici / pazarlama alan adı** kökünde `app-ads.txt` arar. Repoda hazır dosya: `web/app-ads.txt`.
+
+1. Dosyayı sitenin **köküne** yükleyin — tam URL: **https://nobetcim.info/app-ads.txt** (App Store Connect’teki alan adı `nobetcim.info` ise `www` değil).
+2. Tarayıcıda açıp tek satırı görün:
+   `google.com, pub-8301099664647828, DIRECT, f08c47fec0942fa0`
+3. AdMob → uygulama → **app-ads.txt** → **Güncellemeleri kontrol et** (DNS yayılımı 24–48 saat sürebilir).
+
+`www.nobetcim.info` kullanıyorsanız aynı dosyayı oraya da koyun veya apex → www yönlendirmesinde kök yolun erişilebilir olduğundan emin olun.
+
+Geliştirme sırasında [test reklamları](https://developers.google.com/admob/ios/test-ads) için cihazı test cihazı olarak kaydedebilirsiniz.
+
+Panelde **Gizlilik ve mesajlaşma** (UMP) formlarını tamamlayın; canlı reklam onayı app-ads.txt doğrulamasına bağlıdır.
 
 ## App Group & imzalama
 

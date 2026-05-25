@@ -3,8 +3,7 @@ import Foundation
 enum AppConfig {
     /// Uygulama içi başlık ve App Store adıyla aynı marka adı.
     static let appName = "Nöbetçim Cebinde"
-    /// Mağaza onayı sonrası AdMob açıldığında `true` yapın.
-    static let adsEnabled = false
+    static let adsEnabled = true
     static let supportEmail = "destek@nobetcim.info"
 
     static var appGroupID: String {
