@@ -8,8 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		0B00000B2FB4000000000000 /* NobetcimWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0B0000012FB4000000000000 /* NobetcimWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		0D1000032FB6000000000001 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 0D1000022FB6000000000001 /* GoogleMobileAds */; };
-		0D1000062FB6000000000002 /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = 0D1000052FB6000000000002 /* GoogleUserMessagingPlatform */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,8 +59,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0D1000032FB6000000000001 /* GoogleMobileAds in Frameworks */,
-				0D1000062FB6000000000002 /* GoogleUserMessagingPlatform in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -127,8 +123,6 @@
 			);
 			name = nobetcim;
 			packageProductDependencies = (
-				0D1000022FB6000000000001 /* GoogleMobileAds */,
-				0D1000052FB6000000000002 /* GoogleUserMessagingPlatform */,
 			);
 			productName = nobetcim;
 			productReference = 0A65842F2FB30DF2005347A8 /* nobetcim.app */;
@@ -185,8 +179,6 @@
 			mainGroup = 0A6584262FB30DF2005347A8;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				0D1000012FB6000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
-				0D1000042FB6000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0A6584302FB30DF2005347A8 /* Products */;
@@ -394,7 +386,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = nobetcim/Nobetcim.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 8XZ69YB7U5;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -406,7 +398,6 @@
 				INFOPLIST_KEY_ADMOB_BANNER_ID = "$(ADMOB_BANNER_ID)";
 				INFOPLIST_KEY_ADMOB_INTERSTITIAL_ID = "$(ADMOB_INTERSTITIAL_ID)";
 				INFOPLIST_KEY_CFBundleDisplayName = "Nöbetçim Cebinde";
-				INFOPLIST_KEY_GADApplicationIdentifier = "$(ADMOB_APP_ID)";
 				INFOPLIST_KEY_NOBETECZA_API_KEY = "$(NOBETECZA_API_KEY)";
 				INFOPLIST_KEY_NOBETECZA_BASE_URL = "$(NOBETECZA_BASE_URL)";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Size en yakın nöbetçi eczaneleri gösterebilmek için konum bilginize ihtiyaç duyuyoruz.";
@@ -422,7 +413,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(MAIN_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -447,7 +438,7 @@
 				CODE_SIGN_ENTITLEMENTS = nobetcim/Nobetcim.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 8XZ69YB7U5;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -459,7 +450,6 @@
 				INFOPLIST_KEY_ADMOB_BANNER_ID = "$(ADMOB_BANNER_ID)";
 				INFOPLIST_KEY_ADMOB_INTERSTITIAL_ID = "$(ADMOB_INTERSTITIAL_ID)";
 				INFOPLIST_KEY_CFBundleDisplayName = "Nöbetçim Cebinde";
-				INFOPLIST_KEY_GADApplicationIdentifier = "$(ADMOB_APP_ID)";
 				INFOPLIST_KEY_NOBETECZA_API_KEY = "$(NOBETECZA_API_KEY)";
 				INFOPLIST_KEY_NOBETECZA_BASE_URL = "$(NOBETECZA_BASE_URL)";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Size en yakın nöbetçi eczaneleri gösterebilmek için konum bilginize ihtiyaç duyuyoruz.";
@@ -475,7 +465,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(MAIN_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -497,7 +487,7 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = NobetcimWidget/NobetcimWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = "$(DEVELOPMENT_TEAM)";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "Config/NobetcimWidget-Info.plist";
@@ -507,7 +497,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(WIDGET_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -528,7 +518,7 @@
 				CODE_SIGN_ENTITLEMENTS = NobetcimWidget/NobetcimWidget.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 8XZ69YB7U5;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "Config/NobetcimWidget-Info.plist";
@@ -538,7 +528,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(WIDGET_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -585,38 +575,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		0D1000012FB6000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 12.0.0;
-			};
-		};
-		0D1000042FB6000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		0D1000022FB6000000000001 /* GoogleMobileAds */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 0D1000012FB6000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
-			productName = GoogleMobileAds;
-		};
-		0D1000052FB6000000000002 /* GoogleUserMessagingPlatform */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 0D1000042FB6000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */;
-			productName = GoogleUserMessagingPlatform;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0A6584272FB30DF2005347A8 /* Project object */;
 }
