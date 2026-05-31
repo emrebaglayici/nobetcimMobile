@@ -3,8 +3,7 @@ import Foundation
 enum AppConfig {
     /// Uygulama içi başlık ve App Store adıyla aynı marka adı.
     static let appName = "Nöbetçim Cebinde"
-    /// Reklam açmak için `true` yapın ve Xcode’da GoogleMobileAds + UserMessagingPlatform SPM paketlerini tekrar ekleyin.
-    static let adsEnabled = false
+    static let adsEnabled = true
     static let supportEmail = "destek@nobetcim.info"
 
     static var appGroupID: String {
@@ -27,12 +26,12 @@ enum AppConfig {
 
     static var bannerAdUnitID: String {
         resolvedConfigValue(for: "ADMOB_BANNER_ID")
-            ?? "ca-app-pub-3940256099942544/2435281174"
+            ?? "ca-app-pub-8301099664647828/2873724314"
     }
 
     static var interstitialAdUnitID: String {
         resolvedConfigValue(for: "ADMOB_INTERSTITIAL_ID")
-            ?? "ca-app-pub-3940256099942544/4411468910"
+            ?? "ca-app-pub-8301099664647828/6022631831"
     }
 
     static var appVersion: String {

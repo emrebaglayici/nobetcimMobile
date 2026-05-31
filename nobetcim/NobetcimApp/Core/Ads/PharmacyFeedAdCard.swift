@@ -1,72 +1,26 @@
 import SwiftUI
 
-/// In-feed ad slot styled like a pharmacy card (same width, similar height).
+/// Liste içi reklam satırı — eczane kartlarıyla aynı genişlik ve köşe, ek etiket/arka plan yok.
 struct PharmacyFeedAdCard: View {
+    let slotID: String
+
+    private var bannerWidth: CGFloat {
+        AdaptiveBannerLayout.feedBannerWidth()
+    }
+
+    private var bannerHeight: CGFloat {
+        AdaptiveBannerLayout.feedHeight(forWidth: bannerWidth)
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Reklam")
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .textCase(.uppercase)
-
-            FeedBannerAdView()
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-        }
-        .padding()
-        .frame(maxWidth: .infinity, minHeight: 120, alignment: .leading)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
-        .overlay {
-            RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius)
-                .stroke(Color.primary.opacity(0.06))
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Reklam")
+        AdaptiveBannerAdView(width: bannerWidth, slotID: slotID)
+            .frame(width: bannerWidth, height: bannerHeight)
+            .frame(maxWidth: .infinity)
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius))
+            .overlay {
+                RoundedRectangle(cornerRadius: AppTheme.cardCornerRadius)
+                    .stroke(Color.primary.opacity(0.06))
+            }
+            .accessibilityLabel("Reklam")
     }
 }
-
-#if canImport(GoogleMobileAds)
-import GoogleMobileAds
-import UIKit
-
-struct FeedBannerAdView: UIViewRepresentable {
-    let adUnitID: String
-
-    init(adUnitID: String = AppConfig.bannerAdUnitID) {
-        self.adUnitID = adUnitID
-    }
-
-    func makeUIView(context: Context) -> BannerView {
-        let banner = BannerView(adSize: AdSizeBanner)
-        banner.adUnitID = adUnitID
-        banner.translatesAutoresizingMaskIntoConstraints = false
-        banner.rootViewController = Self.rootViewController()
-        banner.load(Request())
-        return banner
-    }
-
-    func updateUIView(_ uiView: BannerView, context: Context) {
-        if uiView.rootViewController == nil {
-            uiView.rootViewController = Self.rootViewController()
-        }
-    }
-
-    private static func rootViewController() -> UIViewController? {
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap(\.windows)
-            .first(where: \.isKeyWindow)?
-            .rootViewController
-    }
-}
-#else
-struct FeedBannerAdView: View {
-    var body: some View {
-        Text("Reklam alanı")
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(.tertiarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 10))
-    }
-}
-#endif

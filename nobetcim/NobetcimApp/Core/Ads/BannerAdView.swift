@@ -4,40 +4,20 @@ import SwiftUI
 import GoogleMobileAds
 import UIKit
 
-struct BannerAdView: UIViewRepresentable {
+struct BannerAdView: View {
     let adUnitID: String
 
     init(adUnitID: String = AppConfig.bannerAdUnitID) {
         self.adUnitID = adUnitID
     }
 
-    func makeUIView(context: Context) -> BannerView {
-        let banner = BannerView(adSize: AdSizeBanner)
-        banner.adUnitID = adUnitID
-        banner.rootViewController = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap(\.windows)
-            .first { $0.isKeyWindow }?
-            .rootViewController
-        banner.translatesAutoresizingMaskIntoConstraints = false
-        banner.load(Request())
-        return banner
-    }
-
-    func updateUIView(_ uiView: BannerView, context: Context) {
-        if uiView.rootViewController == nil {
-            uiView.rootViewController = UIApplication.shared.connectedScenes
-                .compactMap { $0 as? UIWindowScene }
-                .flatMap(\.windows)
-                .first { $0.isKeyWindow }?
-                .rootViewController
+    var body: some View {
+        GeometryReader { proxy in
+            let width = max(proxy.size.width, 320)
+            AdaptiveBannerAdView(adUnitID: adUnitID, width: width)
+                .frame(width: width, height: AdaptiveBannerLayout.height(forWidth: width))
         }
-    }
-
-    static func sizeThatFits(_ proposal: ProposedViewSize, uiView: BannerView, context: Context) -> CGSize? {
-        let width = proposal.width ?? UIScreen.main.bounds.width
-        let height = AdSizeBanner.size.height
-        return CGSize(width: width, height: height)
+        .frame(height: AdaptiveBannerLayout.height(forWidth: UIScreen.main.bounds.width))
     }
 }
 #else

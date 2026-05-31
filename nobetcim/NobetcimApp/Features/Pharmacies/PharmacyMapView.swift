@@ -12,9 +12,7 @@ struct PharmacyMapView: View {
         pharmacies.first { $0.id == selectedPharmacyID }
     }
 
-    /// GAD banner’a sabit yükseklik şart; ZStack’te `infinity` proposal WebView’ı şişirip haritayı kapatabiliyor.
-    private var mapBannerHeight: CGFloat { 50 }
-
+    /// Harita altı banner — yükseklik adaptive banner boyutundan gelir.
     var body: some View {
         Map(position: $position, selection: $selectedPharmacyID) {
             UserAnnotation()
@@ -64,7 +62,6 @@ struct PharmacyMapView: View {
 
             if showsBanner {
                 BannerAdView()
-                    .frame(height: mapBannerHeight)
                     .frame(maxWidth: .infinity)
                     .clipped()
             }

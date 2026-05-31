@@ -52,8 +52,8 @@ struct PharmacyListView: View {
                     switch item {
                     case .pharmacy(let pharmacy):
                         PharmacyCardView(pharmacy: pharmacy)
-                    case .advertisement:
-                        PharmacyFeedAdCard()
+                    case .advertisement(let id):
+                        PharmacyFeedAdCard(slotID: id)
                     }
                 }
             }
