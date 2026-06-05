@@ -5,6 +5,20 @@ enum AppConfig {
     static let appName = "Nöbetçim Cebinde"
     static let adsEnabled = true
     static let supportEmail = "destek@nobetcim.info"
+    static let appStoreURL = "https://apps.apple.com/tr/app/id6771044026"
+    static let minimumVersionPolicyURL = URL(string: "https://nobetcim.info/app-version.json")!
+
+    static var marketingVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+    }
+
+    static var buildNumber: Int {
+        Int(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1") ?? 1
+    }
+
+    static var appVersion: String {
+        "\(marketingVersion) (\(buildNumber))"
+    }
 
     static var appGroupID: String {
         if let configured = resolvedConfigValue(for: "APP_GROUP_ID") {
@@ -32,12 +46,6 @@ enum AppConfig {
     static var interstitialAdUnitID: String {
         resolvedConfigValue(for: "ADMOB_INTERSTITIAL_ID")
             ?? "ca-app-pub-8301099664647828/6022631831"
-    }
-
-    static var appVersion: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
-        return "\(version) (\(build))"
     }
 
     private static func resolvedConfigValue(for key: String) -> String? {

@@ -11,7 +11,11 @@ import GoogleMobileAds
 final class InterstitialAdManager: ObservableObject {
     private var engagementCount = 0
     private var lastPresentedAt: Date?
-    private let minimumInterval: TimeInterval = 90
+
+    /// Geçiş reklamları arası minimum süre.
+    private let minimumInterval: TimeInterval = 180
+    /// Uygulama açıldıktan sonra geçiş reklamı göstermeden önce beklenen süre.
+    private let minimumForegroundTimeBeforeAds: TimeInterval = 120
 
     #if canImport(GoogleMobileAds)
     private var interstitial: InterstitialAd?
@@ -33,7 +37,7 @@ final class InterstitialAdManager: ObservableObject {
     func recordSuccessfulSearch() {
         guard AppConfig.adsEnabled else { return }
         engagementCount += 1
-        if engagementCount % 2 == 0 {
+        if engagementCount % 5 == 0 {
             presentIfReady()
         }
     }
@@ -41,15 +45,7 @@ final class InterstitialAdManager: ObservableObject {
     func recordTabChange() {
         guard AppConfig.adsEnabled else { return }
         engagementCount += 1
-        if engagementCount % 3 == 0 {
-            presentIfReady()
-        }
-    }
-
-    func recordAppBecameActive() {
-        guard AppConfig.adsEnabled else { return }
-        engagementCount += 1
-        if engagementCount % 5 == 0 {
+        if engagementCount % 8 == 0 {
             presentIfReady()
         }
     }
@@ -71,6 +67,10 @@ final class InterstitialAdManager: ObservableObject {
     }
 
     private var canPresentNow: Bool {
+        guard AppSessionClock.shared.totalForegroundTime >= minimumForegroundTimeBeforeAds else {
+            return false
+        }
+
         guard let lastPresentedAt else { return true }
         return Date().timeIntervalSince(lastPresentedAt) >= minimumInterval
     }

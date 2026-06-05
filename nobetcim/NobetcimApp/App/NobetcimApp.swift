@@ -24,11 +24,34 @@ struct NobetcimApp: App {
 struct RootTabView: View {
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject private var interstitialAdManager: InterstitialAdManager
+    @Environment(\.scenePhase) private var scenePhase
 
     @StateObject private var pharmacyViewModel = PharmacyViewModel()
     @State private var selectedTab: AppTab = .pharmacies
+    @State private var forceUpdateRequired = false
+    @State private var forceUpdateMessage = ""
+    @State private var forceUpdateURL = URL(string: AppUpdatePolicy.fallbackAppStoreURL)!
 
     var body: some View {
+        Group {
+            if forceUpdateRequired {
+                ForceUpdateView(message: forceUpdateMessage, appStoreURL: forceUpdateURL)
+            } else {
+                mainTabs
+            }
+        }
+        .task {
+            await checkForRequiredUpdate()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            AppSessionClock.shared.scenePhaseChanged(newPhase)
+            if newPhase == .active {
+                Task { await checkForRequiredUpdate() }
+            }
+        }
+    }
+
+    private var mainTabs: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
                 HomeView(viewModel: pharmacyViewModel)
@@ -69,6 +92,19 @@ struct RootTabView: View {
             if AppConfig.adsEnabled {
                 interstitialAdManager.recordTabChange()
             }
+        }
+    }
+
+    @MainActor
+    private func checkForRequiredUpdate() async {
+        do {
+            let policy = try await AppUpdateService.shared.fetchPolicy()
+            guard AppUpdateService.shared.requiresForceUpdate(policy: policy) else { return }
+            forceUpdateMessage = policy.resolvedMessage
+            forceUpdateURL = policy.resolvedAppStoreURL
+            forceUpdateRequired = true
+        } catch {
+            // Ağ hatasında uygulamayı kilitleme; bir sonraki açılışta tekrar dene.
         }
     }
 }

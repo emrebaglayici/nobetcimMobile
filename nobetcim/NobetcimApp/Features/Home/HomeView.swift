@@ -61,9 +61,6 @@ struct HomeView: View {
                 return
             }
             configureLocationMonitoring()
-            if AppConfig.adsEnabled {
-                interstitialAdManager.recordAppBecameActive()
-            }
             Task {
                 await viewModel.refreshNearbyForWidgetIfNeeded(locationManager: locationManager)
             }
