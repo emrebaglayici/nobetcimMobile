@@ -10,11 +10,14 @@ final class LocationManager: NSObject, ObservableObject {
 
     /// Called when continuous monitoring detects a new fix (foreground only).
     var onLocationUpdate: ((CLLocation) -> Void)?
+    /// Called on significant location changes (~500 m), including background relaunch.
+    var onSignificantLocationChange: ((CLLocation) -> Void)?
 
     private let manager = CLLocationManager()
     private var locationWaiters: [CheckedContinuation<CLLocation, Error>] = []
     private var authorizationContinuation: CheckedContinuation<CLAuthorizationStatus, Never>?
     private var isContinuousMonitoring = false
+    private var isMonitoringSignificantChanges = false
 
     override init() {
         authorizationStatus = manager.authorizationStatus
@@ -39,6 +42,20 @@ final class LocationManager: NSObject, ObservableObject {
             manager.startUpdatingLocation()
         } else if locationWaiters.isEmpty {
             manager.stopUpdatingLocation()
+        }
+    }
+
+    /// Uygulama kapalıyken bile widget güncellemesi için önemli konum değişikliklerini dinler.
+    func setSignificantLocationMonitoringEnabled(_ enabled: Bool) {
+        guard enabled != isMonitoringSignificantChanges else { return }
+        isMonitoringSignificantChanges = enabled
+
+        guard isAuthorized else { return }
+
+        if enabled {
+            manager.startMonitoringSignificantLocationChanges()
+        } else {
+            manager.stopMonitoringSignificantLocationChanges()
         }
     }
 
@@ -122,6 +139,10 @@ extension LocationManager: CLLocationManagerDelegate {
         if isContinuousMonitoring, isAuthorized {
             manager.startUpdatingLocation()
         }
+
+        if isMonitoringSignificantChanges, isAuthorized {
+            manager.startMonitoringSignificantLocationChanges()
+        }
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -135,6 +156,10 @@ extension LocationManager: CLLocationManagerDelegate {
 
         if isContinuousMonitoring {
             onLocationUpdate?(location)
+        }
+
+        if isMonitoringSignificantChanges {
+            onSignificantLocationChange?(location)
         }
     }
 

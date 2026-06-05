@@ -4,6 +4,7 @@ import SwiftUI
 struct NobetcimApp: App {
     @StateObject private var locationManager = LocationManager()
     @StateObject private var interstitialAdManager = InterstitialAdManager()
+    @StateObject private var widgetLocationCoordinator = WidgetLocationCoordinator()
 
     init() {
         if AppConfig.adsEnabled {
@@ -16,6 +17,7 @@ struct NobetcimApp: App {
             RootTabView()
                 .environmentObject(locationManager)
                 .environmentObject(interstitialAdManager)
+                .environmentObject(widgetLocationCoordinator)
                 .tint(AppTheme.primary)
         }
     }
@@ -24,6 +26,7 @@ struct NobetcimApp: App {
 struct RootTabView: View {
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject private var interstitialAdManager: InterstitialAdManager
+    @EnvironmentObject private var widgetLocationCoordinator: WidgetLocationCoordinator
     @Environment(\.scenePhase) private var scenePhase
 
     @StateObject private var pharmacyViewModel = PharmacyViewModel()
@@ -41,12 +44,20 @@ struct RootTabView: View {
             }
         }
         .task {
+            widgetLocationCoordinator.attach(to: locationManager)
             await checkForRequiredUpdate()
+        }
+        .onChange(of: locationManager.authorizationStatus) { _, _ in
+            widgetLocationCoordinator.refreshMonitoring()
         }
         .onChange(of: scenePhase) { _, newPhase in
             AppSessionClock.shared.scenePhaseChanged(newPhase)
             if newPhase == .active {
-                Task { await checkForRequiredUpdate() }
+                widgetLocationCoordinator.refreshMonitoring()
+                Task {
+                    await checkForRequiredUpdate()
+                    await widgetLocationCoordinator.syncNow()
+                }
             }
         }
     }

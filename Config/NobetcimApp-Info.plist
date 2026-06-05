@@ -41,7 +41,11 @@
 	<key>NOBETECZA_BASE_URL</key>
 	<string>$(NOBETECZA_BASE_URL)</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Size en yakın nöbetçi eczaneleri gösterebilmek için konum bilginize ihtiyaç duyuyoruz.</string>
+	<string>Yakınınızdaki nöbetçi eczaneleri göstermek ve ana ekran widget'ını konumunuza göre güncel tutmak için konum bilginize ihtiyaç duyuyoruz.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>

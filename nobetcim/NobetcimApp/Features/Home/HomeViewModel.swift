@@ -160,20 +160,19 @@ final class PharmacyViewModel: ObservableObject {
         locationSyncTask?.cancel()
         locationSyncTask = Task {
             do {
-                let location = try await locationManager.requestLocation(preferCached: true)
+                let preferCached = !forceRefresh
+                let location = try await locationManager.requestLocation(preferCached: preferCached)
                 guard !Task.isCancelled else { return }
 
-                let shouldRefresh = forceRefresh
-                    || NearestPharmacyWidgetStore.shouldRefresh(for: location.coordinate)
-                    || pharmacies.isEmpty
-
+                let movedEnough = NearestPharmacyWidgetStore.shouldRefresh(for: location.coordinate)
+                let shouldRefresh = forceRefresh || movedEnough || pharmacies.isEmpty
                 guard shouldRefresh else { return }
 
-                let results = try await repository.fetchNearby(
-                    latitude: location.coordinate.latitude,
-                    longitude: location.coordinate.longitude,
-                    forceRefresh: forceRefresh || NearestPharmacyWidgetStore.shouldRefresh(for: location.coordinate)
-                )
+                guard let results = await WidgetLocationSyncService.sync(
+                    at: location,
+                    forceRefresh: forceRefresh || movedEnough
+                ) else { return }
+
                 guard !Task.isCancelled else { return }
 
                 pharmacies = results
@@ -199,7 +198,11 @@ final class PharmacyViewModel: ObservableObject {
 
         locationSyncTask?.cancel()
         locationSyncTask = Task {
-            await refreshNearbyForWidgetIfNeeded(locationManager: locationManager, forceRefresh: true)
+            guard let results = await WidgetLocationSyncService.sync(at: location, forceRefresh: true) else { return }
+            guard !Task.isCancelled else { return }
+            pharmacies = results
+            hasSearched = true
+            errorMessage = results.isEmpty ? "Bu bölgede nöbetçi eczane bulunamadı." : nil
         }
     }
 
