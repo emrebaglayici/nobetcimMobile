@@ -3,7 +3,7 @@ import Foundation
 enum AppConfig {
     /// Uygulama içi başlık ve App Store adıyla aynı marka adı.
     static let appName = "Nöbetçim Cebinde"
-    static let adsEnabled = true
+    static let adsEnabled = false
     static let supportEmail = "destek@nobetcim.info"
     static let appStoreURL = "https://apps.apple.com/tr/app/id6771044026"
     static let minimumVersionPolicyURL = URL(string: "https://nobetcim.info/app-version.json")!
