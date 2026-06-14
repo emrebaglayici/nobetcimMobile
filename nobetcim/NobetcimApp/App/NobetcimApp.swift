@@ -56,7 +56,6 @@ struct RootTabView: View {
                 widgetLocationCoordinator.refreshMonitoring()
                 Task {
                     await checkForRequiredUpdate()
-                    await widgetLocationCoordinator.syncNow()
                 }
             }
         }

@@ -19,7 +19,7 @@ struct HomeView: View {
                     isLoading: viewModel.isLoading,
                     errorMessage: viewModel.errorMessage,
                     hasSearched: viewModel.hasSearched,
-                    retry: { Task { await performSearch(forceRefresh: true) } }
+                    retry: { Task { await performSearch(forceRefresh: true, ignoreNetworkThrottle: true) } }
                 )
             }
             .padding()
@@ -27,7 +27,7 @@ struct HomeView: View {
             .frame(maxWidth: .infinity)
         }
         .refreshable {
-            await performSearch(forceRefresh: true, isPullToRefresh: true)
+            await performSearch(isPullToRefresh: true)
         }
         .navigationTitle(AppConfig.appName)
         .navigationBarTitleDisplayMode(.inline)
@@ -220,11 +220,16 @@ struct HomeView: View {
         locationManager.setContinuousMonitoringEnabled(enabled)
     }
 
-    private func performSearch(forceRefresh: Bool = false, isPullToRefresh: Bool = false) async {
+    private func performSearch(
+        forceRefresh: Bool = false,
+        isPullToRefresh: Bool = false,
+        ignoreNetworkThrottle: Bool = false
+    ) async {
         let didFindResults = await viewModel.search(
             locationManager: locationManager,
             forceRefresh: forceRefresh,
-            isPullToRefresh: isPullToRefresh
+            isPullToRefresh: isPullToRefresh,
+            ignoreNetworkThrottle: ignoreNetworkThrottle
         )
         if didFindResults, AppConfig.adsEnabled {
             interstitialAdManager.recordSuccessfulSearch()

@@ -20,6 +20,13 @@
 			remoteGlobalIDString = 0B0000032FB4000000000000;
 			remoteInfo = NobetcimWidget;
 		};
+		0E10000A2FB7000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0A6584272FB30DF2005347A8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0A65842E2FB30DF2005347A8;
+			remoteInfo = nobetcim;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -39,6 +46,7 @@
 /* Begin PBXFileReference section */
 		0A65842F2FB30DF2005347A8 /* nobetcim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = nobetcim.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0B0000012FB4000000000000 /* NobetcimWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NobetcimWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		0E1000012FB7000000000001 /* nobetcimTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = nobetcimTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C1000012FB5000000000001 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		0C1000022FB5000000000002 /* Secrets.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig.example; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -52,6 +60,11 @@
 		0B0000022FB4000000000000 /* NobetcimWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = NobetcimWidget;
+			sourceTree = "<group>";
+		};
+		0E1000022FB7000000000001 /* nobetcimTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = nobetcimTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -73,6 +86,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		0E1000052FB7000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -82,6 +102,7 @@
 				0C1000102FB5000000000001 /* Config */,
 				0A6584312FB30DF2005347A8 /* nobetcim */,
 				0B0000022FB4000000000000 /* NobetcimWidget */,
+				0E1000022FB7000000000001 /* nobetcimTests */,
 				0A6584302FB30DF2005347A8 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -91,6 +112,7 @@
 			children = (
 				0A65842F2FB30DF2005347A8 /* nobetcim.app */,
 				0B0000012FB4000000000000 /* NobetcimWidget.appex */,
+				0E1000012FB7000000000001 /* nobetcimTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -156,6 +178,29 @@
 			productReference = 0B0000012FB4000000000000 /* NobetcimWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		0E1000032FB7000000000001 /* nobetcimTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0E1000072FB7000000000001 /* Build configuration list for PBXNativeTarget "nobetcimTests" */;
+			buildPhases = (
+				0E1000042FB7000000000001 /* Sources */,
+				0E1000052FB7000000000001 /* Frameworks */,
+				0E1000062FB7000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				0E10000B2FB7000000000001 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				0E1000022FB7000000000001 /* nobetcimTests */,
+			);
+			name = nobetcimTests;
+			packageProductDependencies = (
+			);
+			productName = nobetcimTests;
+			productReference = 0E1000012FB7000000000001 /* nobetcimTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -195,6 +240,7 @@
 			targets = (
 				0A65842E2FB30DF2005347A8 /* nobetcim */,
 				0B0000032FB4000000000000 /* NobetcimWidget */,
+				0E1000032FB7000000000001 /* nobetcimTests */,
 			);
 		};
 /* End PBXProject section */
@@ -208,6 +254,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		0B0000062FB4000000000000 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0E1000062FB7000000000001 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -255,6 +308,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		0E1000042FB7000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -262,6 +322,11 @@
 			isa = PBXTargetDependency;
 			target = 0B0000032FB4000000000000 /* NobetcimWidget */;
 			targetProxy = 0B00000C2FB4000000000000 /* PBXContainerItemProxy */;
+		};
+		0E10000B2FB7000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0A65842E2FB30DF2005347A8 /* nobetcim */;
+			targetProxy = 0E10000A2FB7000000000001 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -554,6 +619,56 @@
 			};
 			name = Release;
 		};
+		0E1000082FB7000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 12;
+				DEVELOPMENT_TEAM = 8XZ69YB7U5;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.1.5;
+				PRODUCT_BUNDLE_IDENTIFIER = emrebaglayici.nobetcimTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/nobetcim.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/nobetcim";
+			};
+			name = Debug;
+		};
+		0E1000092FB7000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 12;
+				DEVELOPMENT_TEAM = 8XZ69YB7U5;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.1.5;
+				PRODUCT_BUNDLE_IDENTIFIER = emrebaglayici.nobetcimTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/nobetcim.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/nobetcim";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -580,6 +695,15 @@
 			buildConfigurations = (
 				0B0000082FB4000000000000 /* Debug */,
 				0B0000092FB4000000000000 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0E1000072FB7000000000001 /* Build configuration list for PBXNativeTarget "nobetcimTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0E1000082FB7000000000001 /* Debug */,
+				0E1000092FB7000000000001 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

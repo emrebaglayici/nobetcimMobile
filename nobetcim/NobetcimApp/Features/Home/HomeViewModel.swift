@@ -84,62 +84,83 @@ final class PharmacyViewModel: ObservableObject {
     func search(
         locationManager: LocationManager,
         forceRefresh: Bool = false,
-        isPullToRefresh: Bool = false
+        isPullToRefresh: Bool = false,
+        ignoreNetworkThrottle: Bool = false
     ) async -> Bool {
-        let hadExistingResults = !pharmacies.isEmpty
-        isLoading = true
-        pharmacies = []
-        if !isPullToRefresh || !hadExistingResults {
+        let previousPharmacies = pharmacies
+        let hadExistingResults = !previousPharmacies.isEmpty
+        let keepVisibleResults = isPullToRefresh && hadExistingResults
+
+        if keepVisibleResults {
+            // SwiftUI refreshable spinner is enough; don't replace the list with a loader.
+        } else {
+            isLoading = true
+            pharmacies = []
             errorMessage = nil
         }
+
         defer {
-            isLoading = false
+            if !keepVisibleResults {
+                isLoading = false
+            }
             hasSearched = true
         }
 
         do {
+            let refreshed: [Pharmacy]
             switch searchMode {
             case .nearby:
-                let location = try await locationManager.requestLocation(preferCached: isPullToRefresh || !forceRefresh)
+                let shouldForceNetwork = forceRefresh && !isPullToRefresh
+                let location = try await locationManager.requestLocation(preferCached: isPullToRefresh || !shouldForceNetwork)
                 let nearby = try await repository.fetchNearby(
                     latitude: location.coordinate.latitude,
                     longitude: location.coordinate.longitude,
-                    forceRefresh: forceRefresh
+                    forceRefresh: shouldForceNetwork,
+                    ignoreThrottle: ignoreNetworkThrottle
                 )
-                pharmacies = try await resolvePharmacyDistances(
+                refreshed = try await resolvePharmacyDistances(
                     nearby,
                     locationManager: locationManager,
-                    origin: location
+                    origin: location,
+                    preferCachedDistances: isPullToRefresh
                 )
             case .city:
                 updateDistrictForSelectedCity()
                 let cityResults = try await repository.fetchByCity(
                     city: selectedCity,
                     district: selectedDistrict.isEmpty ? nil : selectedDistrict,
-                    forceRefresh: forceRefresh,
+                    forceRefresh: forceRefresh && !isPullToRefresh,
                     directory: locationDirectory
                 )
-                pharmacies = try await resolvePharmacyDistances(
+                refreshed = try await resolvePharmacyDistances(
                     cityResults,
                     locationManager: locationManager,
                     origin: nil
                 )
             }
 
-            if pharmacies.isEmpty {
-                errorMessage = "Bu bölgede nöbetçi eczane bulunamadı."
+            if refreshed.isEmpty {
+                if keepVisibleResults {
+                    pharmacies = previousPharmacies
+                    errorMessage = nil
+                } else {
+                    pharmacies = []
+                    errorMessage = "Bu bölgede nöbetçi eczane bulunamadı."
+                }
             } else {
+                pharmacies = refreshed
                 errorMessage = nil
             }
             return !pharmacies.isEmpty
         } catch {
-            if error.isBenignSearchCancellation {
-                return hadExistingResults || !pharmacies.isEmpty
-            }
-
-            if isPullToRefresh, hadExistingResults {
+            if keepVisibleResults {
+                pharmacies = previousPharmacies
                 errorMessage = nil
                 return true
+            }
+
+            if error.isBenignSearchCancellation {
+                return false
             }
 
             if let networkError = error as? NetworkError {
@@ -154,23 +175,22 @@ final class PharmacyViewModel: ObservableObject {
     }
 
     /// Refreshes nearby pharmacies + widget when the app becomes active or location shifts.
-    func refreshNearbyForWidgetIfNeeded(locationManager: LocationManager, forceRefresh: Bool = false) async {
+    func refreshNearbyForWidgetIfNeeded(locationManager: LocationManager) async {
         guard searchMode == .nearby, locationManager.isAuthorized else { return }
 
         locationSyncTask?.cancel()
         locationSyncTask = Task {
             do {
-                let preferCached = !forceRefresh
-                let location = try await locationManager.requestLocation(preferCached: preferCached)
+                let location = try await locationManager.requestLocation(preferCached: true)
                 guard !Task.isCancelled else { return }
 
                 let movedEnough = NearestPharmacyWidgetStore.shouldRefresh(for: location.coordinate)
-                let shouldRefresh = forceRefresh || movedEnough || pharmacies.isEmpty
+                let shouldRefresh = movedEnough || pharmacies.isEmpty
                 guard shouldRefresh else { return }
 
                 guard let results = await WidgetLocationSyncService.sync(
                     at: location,
-                    forceRefresh: forceRefresh || movedEnough
+                    forceRefresh: false
                 ) else { return }
 
                 guard !Task.isCancelled else { return }
@@ -198,7 +218,7 @@ final class PharmacyViewModel: ObservableObject {
 
         locationSyncTask?.cancel()
         locationSyncTask = Task {
-            guard let results = await WidgetLocationSyncService.sync(at: location, forceRefresh: true) else { return }
+            guard let results = await WidgetLocationSyncService.sync(at: location, forceRefresh: false) else { return }
             guard !Task.isCancelled else { return }
             pharmacies = results
             hasSearched = true
@@ -215,7 +235,8 @@ final class PharmacyViewModel: ObservableObject {
     private func resolvePharmacyDistances(
         _ results: [Pharmacy],
         locationManager: LocationManager,
-        origin: CLLocation?
+        origin: CLLocation?,
+        preferCachedDistances: Bool = false
     ) async throws -> [Pharmacy] {
         guard !results.isEmpty else { return results }
 
@@ -226,6 +247,10 @@ final class PharmacyViewModel: ObservableObject {
             resolvedOrigin = try await locationManager.requestLocation(preferCached: true)
         } else {
             throw LocationError.denied
+        }
+
+        if preferCachedDistances {
+            return results.sortedByDistance(from: resolvedOrigin)
         }
 
         return await PharmacyDistanceCalculator.resolveDistances(results, from: resolvedOrigin)

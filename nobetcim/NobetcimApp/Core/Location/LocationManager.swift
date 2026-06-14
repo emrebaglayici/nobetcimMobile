@@ -32,6 +32,13 @@ final class LocationManager: NSObject, ObservableObject {
         authorizationStatus == .authorizedAlways || authorizationStatus == .authorizedWhenInUse
     }
 
+    #if DEBUG
+    func setTestLocation(_ location: CLLocation) {
+        currentLocation = location
+        authorizationStatus = .authorizedWhenInUse
+    }
+    #endif
+
     func setContinuousMonitoringEnabled(_ enabled: Bool) {
         guard enabled != isContinuousMonitoring else { return }
         isContinuousMonitoring = enabled

@@ -26,7 +26,7 @@ enum WidgetLocationSyncService {
             let results = try await repository.fetchNearby(
                 latitude: location.coordinate.latitude,
                 longitude: location.coordinate.longitude,
-                forceRefresh: forceRefresh || NearestPharmacyWidgetStore.shouldRefresh(for: location.coordinate)
+                forceRefresh: forceRefresh
             )
             return results
         } catch {

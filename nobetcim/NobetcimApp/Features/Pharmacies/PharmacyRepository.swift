@@ -2,7 +2,12 @@ import CoreLocation
 import Foundation
 
 protocol PharmacyRepositoryProtocol {
-    func fetchNearby(latitude: CLLocationDegrees, longitude: CLLocationDegrees, forceRefresh: Bool) async throws -> [Pharmacy]
+    func fetchNearby(
+        latitude: CLLocationDegrees,
+        longitude: CLLocationDegrees,
+        forceRefresh: Bool,
+        ignoreThrottle: Bool
+    ) async throws -> [Pharmacy]
     func fetchByCity(city: String, district: String?, forceRefresh: Bool, directory: [CityDistrict]?) async throws -> [Pharmacy]
     func loadDirectory(forceRefresh: Bool) async -> [CityDistrict]
     func loadDistricts(for city: String, forceRefresh: Bool) async -> [String]
@@ -23,13 +28,28 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
         self.directoryCache = directoryCache
     }
 
-    func fetchNearby(latitude: CLLocationDegrees, longitude: CLLocationDegrees, forceRefresh: Bool = false) async throws -> [Pharmacy] {
-        let cache = DailyCacheStore<[Pharmacy]>(key: "nobetcim.daily.nearby.\(latitude.cacheCoordinateKey).\(longitude.cacheCoordinateKey)")
-        if !forceRefresh, let cached = cache.loadToday() {
+    func fetchNearby(
+        latitude: CLLocationDegrees,
+        longitude: CLLocationDegrees,
+        forceRefresh: Bool = false,
+        ignoreThrottle: Bool = false
+    ) async throws -> [Pharmacy] {
+        let cache = DailyCacheStore<[Pharmacy]>(key: "nobetcim.daily.nearby.\(latitude.nearbyCacheCoordinateKey).\(longitude.nearbyCacheCoordinateKey)")
+        let todayCache = cache.loadToday()
+        let shouldUseNetwork = NearbyRefreshPolicy.shouldPerformNetworkFetch(
+            forceRefresh: forceRefresh,
+            hasTodayCache: todayCache != nil,
+            ignoreThrottle: ignoreThrottle
+        )
+
+        if !shouldUseNetwork, let todayCache {
             #if DEBUG
             print("NobetEcza daily cache hit: nearby")
             #endif
-            return finishNearby(sorted: cached.sortedByDistance(from: CLLocation(latitude: latitude, longitude: longitude)), anchor: coordinateAnchor(latitude, longitude))
+            return finishNearby(
+                sorted: todayCache.sortedByDistance(from: CLLocation(latitude: latitude, longitude: longitude)),
+                anchor: coordinateAnchor(latitude, longitude)
+            )
         }
 
         do {
@@ -37,6 +57,7 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
             print("NobetEcza daily cache miss: nearby")
             #endif
             let remote = try await pharmacyService.fetchNearby(latitude: latitude, longitude: longitude, radius: 50000)
+            NearbyRefreshPolicy.recordNetworkFetch()
             let sorted = remote.sortedByDistance(from: CLLocation(latitude: latitude, longitude: longitude))
             if !sorted.isEmpty {
                 cache.saveToday(sorted)
@@ -171,8 +192,9 @@ private extension Error {
 }
 
 private extension Double {
-    var cacheCoordinateKey: String {
-        String(format: "%.3f", self)
+    /// ~1.1 km ızgara; küçük konum kaymalarında aynı günlük önbellek kullanılır.
+    var nearbyCacheCoordinateKey: String {
+        String(format: "%.2f", self)
             .replacingOccurrences(of: ".", with: "_")
             .replacingOccurrences(of: "-", with: "m")
     }
