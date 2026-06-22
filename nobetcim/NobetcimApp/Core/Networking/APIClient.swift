@@ -79,6 +79,8 @@ final class APIClient: APIClientProtocol {
                 #endif
                 throw NetworkError.decoding
             }
+        case 400:
+            throw NetworkError.badRequest
         case 401, 403:
             throw NetworkError.unauthorized
         case 404:
@@ -89,6 +91,8 @@ final class APIClient: APIClientProtocol {
                 return try await decode(request, as: type, canRetryRateLimit: false)
             }
             throw NetworkError.rateLimited
+        case 503:
+            throw NetworkError.notConfigured
         case 500...599:
             throw NetworkError.server(httpResponse.statusCode)
         default:

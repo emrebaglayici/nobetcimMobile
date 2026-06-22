@@ -30,18 +30,20 @@ struct PharmacyListView: View {
             if isLoading {
                 LoadingStateView(message: "En yakın eczane bulunuyor…")
             } else if pharmacies.isEmpty, let errorMessage {
-                ErrorStateView(message: errorMessage, retry: retry)
+                ErrorStateView(message: errorMessage, retry: retry, tint: AppTheme.primary)
             } else if pharmacies.isEmpty, hasSearched {
                 EmptyStateView(
                     title: "Sonuç bulunamadı",
                     message: "Farklı bir il veya ilçe seçerek tekrar deneyin.",
-                    systemImage: "cross.case"
+                    systemImage: "cross.case",
+                    tint: AppTheme.primary
                 )
             } else if pharmacies.isEmpty {
                 EmptyStateView(
                     title: "Arama yapın",
-                    message: "Konumunuza göre veya il / ilçe seçerek arama yapın. Şu an nöbetçi eczaneler listelenir.",
-                    systemImage: "cross.case.fill"
+                    message: "Konumunuza göre veya il / ilçe seçerek eczaneleri listeleyin.",
+                    systemImage: "cross.case.fill",
+                    tint: AppTheme.primary
                 )
             } else {
                 if let errorMessage {

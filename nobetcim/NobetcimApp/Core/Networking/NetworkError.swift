@@ -5,8 +5,10 @@ enum NetworkError: Error, LocalizedError, Equatable {
     case missingAPIKey
     case invalidResponse
     case unauthorized
+    case badRequest
     case notFound
     case rateLimited
+    case notConfigured
     case server(Int)
     case decoding
     case transport(String)
@@ -22,10 +24,14 @@ enum NetworkError: Error, LocalizedError, Equatable {
             "Sunucudan geçerli yanıt alınamadı."
         case .unauthorized:
             "API yetkilendirmesi başarısız."
+        case .badRequest:
+            "Arama bilgileri geçersiz."
         case .notFound:
-            "Bu bölgede nöbetçi eczane bulunamadı."
+            "Bu bölgede sonuç bulunamadı."
         case .rateLimited:
             "Sunucu geçici olarak yoğun. Lütfen kısa süre sonra tekrar deneyin."
+        case .notConfigured:
+            "API şu anda yapılandırılmamış."
         case .server:
             "Eczane bilgileri alınamadı."
         case .decoding:
@@ -39,7 +45,7 @@ enum NetworkError: Error, LocalizedError, Equatable {
 
     var prefersStaleCache: Bool {
         switch self {
-        case .rateLimited, .server:
+        case .rateLimited, .notConfigured, .server:
             true
         default:
             false

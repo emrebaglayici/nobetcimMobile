@@ -31,7 +31,7 @@ enum AppConfig {
 
     static var baseURL: URL {
         let value = resolvedConfigValue(for: "NOBETECZA_BASE_URL")
-        return URL(string: value ?? "https://api.nobetecza.com")!
+        return URL(string: value ?? "https://nobetcimbackend.vercel.app/api/v1")!
     }
 
     static var apiKey: String {

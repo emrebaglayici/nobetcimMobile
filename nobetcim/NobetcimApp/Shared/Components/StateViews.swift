@@ -18,12 +18,13 @@ struct EmptyStateView: View {
     let title: String
     let message: String
     var systemImage = "magnifyingglass"
+    var tint: Color = AppTheme.primary
 
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: systemImage)
                 .font(.system(size: 42, weight: .semibold))
-                .foregroundStyle(AppTheme.primary)
+                .foregroundStyle(tint)
             Text(title)
                 .font(.headline)
             Text(message)
@@ -39,18 +40,20 @@ struct EmptyStateView: View {
 struct ErrorStateView: View {
     let message: String
     let retry: () -> Void
+    var tint: Color = AppTheme.primary
 
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 40))
-                .foregroundStyle(AppTheme.warning)
+                .foregroundStyle(tint)
             Text(message)
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
             Button("Tekrar Dene", action: retry)
                 .buttonStyle(.borderedProminent)
+                .tint(tint)
         }
         .padding(28)
         .frame(maxWidth: .infinity, minHeight: 220)

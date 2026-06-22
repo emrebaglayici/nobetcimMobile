@@ -145,7 +145,7 @@ final class PharmacyViewModel: ObservableObject {
                     errorMessage = nil
                 } else {
                     pharmacies = []
-                    errorMessage = "Bu bölgede nöbetçi eczane bulunamadı."
+                    errorMessage = "Bu bölgede eczane bulunamadı."
                 }
             } else {
                 pharmacies = refreshed
@@ -198,7 +198,7 @@ final class PharmacyViewModel: ObservableObject {
                 pharmacies = results
                 hasSearched = true
                 if results.isEmpty {
-                    errorMessage = "Bu bölgede nöbetçi eczane bulunamadı."
+                    errorMessage = "Bu bölgede eczane bulunamadı."
                 } else {
                     errorMessage = nil
                 }
@@ -222,7 +222,7 @@ final class PharmacyViewModel: ObservableObject {
             guard !Task.isCancelled else { return }
             pharmacies = results
             hasSearched = true
-            errorMessage = results.isEmpty ? "Bu bölgede nöbetçi eczane bulunamadı." : nil
+            errorMessage = results.isEmpty ? "Bu bölgede eczane bulunamadı." : nil
         }
     }
 
@@ -259,6 +259,216 @@ final class PharmacyViewModel: ObservableObject {
 }
 
 typealias HomeViewModel = PharmacyViewModel
+
+@MainActor
+final class NotaryViewModel: ObservableObject {
+    @Published var searchMode: SearchMode = .nearby
+    @Published var selectedCity = "İstanbul"
+    @Published var selectedDistrict = "Kadıköy"
+    @Published var notaries: [Pharmacy] = []
+    @Published var isLoading = false
+    @Published var isLoadingDirectory = false
+    @Published var errorMessage: String?
+    @Published var hasSearched = false
+    @Published private(set) var locationDirectory: [CityDistrict] = []
+    @Published private(set) var districtOptions: [String] = []
+
+    private let notaryService: NotaryServiceProtocol
+    private let directoryService: LocationDirectoryServiceProtocol
+
+    init(
+        notaryService: NotaryServiceProtocol = NotaryService(),
+        directoryService: LocationDirectoryServiceProtocol = LocationDirectoryService()
+    ) {
+        self.notaryService = notaryService
+        self.directoryService = directoryService
+    }
+
+    var cities: [String] {
+        locationDirectory.map(\.city)
+    }
+
+    var districts: [String] {
+        districtOptions.isEmpty ? TurkeyLocationCatalog.districts(for: selectedCity) : districtOptions
+    }
+
+    func clearResultsForModeChange() {
+        notaries = []
+        errorMessage = nil
+        hasSearched = false
+    }
+
+    func updateDistrictForSelectedCity() {
+        let available = districts
+        if selectedDistrict.isEmpty { return }
+        if !available.contains(where: { $0.matchesTurkish(selectedDistrict) }) {
+            selectedDistrict = ""
+        }
+    }
+
+    func loadDirectory() async {
+        guard locationDirectory.isEmpty else { return }
+        isLoadingDirectory = true
+        defer { isLoadingDirectory = false }
+
+        let remote = (try? await directoryService.fetchCities()) ?? []
+        let directory = remote.isEmpty ? TurkeyLocationCatalog.allCities() : remote
+        locationDirectory = directory
+
+        if !directory.contains(where: { $0.city.matchesTurkish(selectedCity) }) {
+            selectedCity = directory.first?.city ?? selectedCity
+        }
+        await loadDistrictsForSelectedCity(forceRefresh: true)
+    }
+
+    func loadDistrictsForSelectedCity(forceRefresh: Bool = false) async {
+        let citySlug = cityInfo(for: selectedCity)?.citySlug ?? selectedCity.slugifiedTurkish
+        if !forceRefresh, !districtOptions.isEmpty { return }
+        isLoadingDirectory = true
+        defer { isLoadingDirectory = false }
+
+        let remote = (try? await directoryService.fetchDistricts(citySlug: citySlug, type: .notary).map(\.name)) ?? []
+        districtOptions = remote.isEmpty ? TurkeyLocationCatalog.districts(for: selectedCity) : remote
+        updateDistrictForSelectedCity()
+    }
+
+    func search(locationManager: LocationManager, forceRefresh: Bool = false, isPullToRefresh: Bool = false) async -> Bool {
+        if !isPullToRefresh {
+            isLoading = true
+            notaries = []
+            errorMessage = nil
+        }
+        defer {
+            isLoading = false
+            hasSearched = true
+        }
+
+        do {
+            let refreshed: [Pharmacy]
+            let usesCatalog = OperatingSchedule.notaryUsesCatalog()
+            switch searchMode {
+            case .nearby:
+                let location = try await locationManager.requestLocation(preferCached: !forceRefresh)
+                if usesCatalog {
+                    let city = (try? await LocationGeocoder.resolveCity(from: location)) ?? selectedCity
+                    let cityInfo = cityInfo(for: city)
+                    let citySlug = cityInfo?.citySlug ?? city.slugifiedTurkish
+                    let cache = DailyCacheStore<[Pharmacy]>(key: "nobetcim.daily.notary.catalog.nearby.\(citySlug)")
+                    if !forceRefresh, let cached = cache.loadToday() {
+                        refreshed = cached.sortedByDistance(from: location)
+                    } else {
+                        refreshed = try await notaryService.fetchCatalogNotaries(
+                            citySlug: citySlug,
+                            districtSlug: nil,
+                            page: 1,
+                            limit: 100
+                        )
+                        .sortedByDistance(from: location)
+                        if !refreshed.isEmpty {
+                            cache.saveToday(refreshed)
+                        }
+                    }
+                } else {
+                    let cache = DailyCacheStore<[Pharmacy]>(key: "nobetcim.daily.notary.duty.nearby.\(location.coordinate.latitude.nearbyCacheCoordinateKey).\(location.coordinate.longitude.nearbyCacheCoordinateKey)")
+                    if !forceRefresh, let cached = cache.loadToday() {
+                        refreshed = cached.sortedByDistance(from: location)
+                    } else {
+                        refreshed = try await notaryService.fetchNearby(
+                            latitude: location.coordinate.latitude,
+                            longitude: location.coordinate.longitude,
+                            radius: 50000
+                        )
+                        .sortedByDistance(from: location)
+                        if !refreshed.isEmpty {
+                            cache.saveToday(refreshed)
+                        }
+                    }
+                }
+            case .city:
+                await loadDistrictsForSelectedCity()
+                updateDistrictForSelectedCity()
+                let cityInfo = cityInfo(for: selectedCity)
+                let citySlug = cityInfo?.citySlug ?? selectedCity.slugifiedTurkish
+                let districtSlug = cityInfo?.slug(forDistrict: selectedDistrict)
+                    ?? selectedDistrict.canonicalDistrictName.slugifiedTurkish
+                let district = selectedDistrict.isEmpty ? nil : districtSlug
+                let cacheKind = usesCatalog ? "catalog" : "duty"
+                let cacheDistrict = district ?? "all"
+                let cache = DailyCacheStore<[Pharmacy]>(key: "nobetcim.daily.notary.\(cacheKind).\(citySlug).\(cacheDistrict)")
+                if !forceRefresh, let cached = cache.loadToday() {
+                    refreshed = cached.sortedByDistrictAndNameForNotaries()
+                } else {
+                    if usesCatalog {
+                        refreshed = try await notaryService.fetchCatalogNotaries(
+                            citySlug: citySlug,
+                            districtSlug: district,
+                            page: 1,
+                            limit: 100
+                        )
+                        .sortedByDistrictAndNameForNotaries()
+                    } else {
+                        refreshed = try await notaryService.fetchDutyNotaries(citySlug: citySlug, districtSlug: district)
+                            .sortedByDistrictAndNameForNotaries()
+                    }
+                    if !refreshed.isEmpty {
+                        cache.saveToday(refreshed)
+                    }
+                }
+            }
+
+            notaries = refreshed
+            errorMessage = refreshed.isEmpty ? "Bu bölgede noter bulunamadı." : nil
+            return !refreshed.isEmpty
+        } catch {
+            if error.isBenignSearchCancellation {
+                return false
+            }
+            if let networkError = error as? NetworkError {
+                errorMessage = networkError.localizedDescription
+            } else if let locationError = error as? LocationError {
+                errorMessage = locationError.localizedDescription
+            } else {
+                errorMessage = "Noter bilgileri alınamadı."
+            }
+            return false
+        }
+    }
+
+    func usePreviewData() {
+        notaries = Pharmacy.previews.map {
+            Pharmacy(
+                id: "notary-\($0.id)",
+                name: $0.name.replacingOccurrences(of: "Eczanesi", with: "Noterliği"),
+                city: $0.city,
+                district: $0.district,
+                address: $0.address,
+                phone: $0.phone,
+                latitude: $0.latitude,
+                longitude: $0.longitude,
+                distanceKm: $0.distanceKm
+            )
+        }
+        hasSearched = true
+    }
+
+    private func cityInfo(for city: String) -> CityDistrict? {
+        if let match = TurkeyLocationCatalog.entry(for: city) {
+            return match
+        }
+        return locationDirectory.first { $0.city.matchesTurkish(city) || $0.citySlug == city.slugifiedTurkish }
+    }
+}
+
+private extension Array where Element == Pharmacy {
+    func sortedByDistrictAndNameForNotaries() -> [Pharmacy] {
+        sorted {
+            if $0.district == $1.district {
+                return $0.name.localizedStandardCompare($1.name) == .orderedAscending
+            }
+            return $0.district.localizedStandardCompare($1.district) == .orderedAscending
+        }
+    }
+}
 
 private extension Error {
     var isBenignSearchCancellation: Bool {

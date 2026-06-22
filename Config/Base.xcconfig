@@ -9,4 +9,4 @@ APP_GROUP_ID = group.$(MAIN_BUNDLE_IDENTIFIER)
 // Apple Developer Team ID (Emre Baglayici)
 DEVELOPMENT_TEAM = 8XZ69YB7U5
 
-NOBETECZA_BASE_URL = https:/$()/api.nobetecza.com
+NOBETECZA_BASE_URL = https:/$()/nobetcimbackend.vercel.app/api/v1

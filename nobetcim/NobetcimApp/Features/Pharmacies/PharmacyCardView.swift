@@ -5,6 +5,10 @@ struct PharmacyCardView: View {
     @State private var showsPhoneAlert = false
     @State private var showsDirectionsAlert = false
 
+    private var status: PlaceOperatingStatus {
+        OperatingSchedule.status(kind: .pharmacy)
+    }
+
     var body: some View {
         NavigationLink {
             PharmacyDetailView(pharmacy: pharmacy)
@@ -36,7 +40,7 @@ struct PharmacyCardView: View {
                     .lineLimit(3)
 
                 HStack(spacing: 8) {
-                    Badge(text: "Bugün Nöbetçi", systemImage: "checkmark.seal.fill", color: AppTheme.primary)
+                    Badge(text: status.title, systemImage: status.isClosed ? "xmark.circle.fill" : "checkmark.seal.fill", color: AppTheme.primary)
                     if let distance = pharmacy.distanceKm {
                         Badge(text: String(format: "%.1f km", distance), systemImage: "location.fill", color: AppTheme.primary)
                     }

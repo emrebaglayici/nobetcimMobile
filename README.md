@@ -7,7 +7,7 @@ Yerel hizmet ve işletme bilgilerine odaklanan iOS uygulaması; şu an nöbetçi
 - macOS + **Xcode 16+**
 - iOS **17.0+** hedef
 - Apple Developer hesabı (cihaz / TestFlight için)
-- [NobetEcza API](https://api.nobetecza.com) anahtarı
+- [Nöbetçim API](https://nobetcimbackend.vercel.app/api/v1) anahtarı
 
 ## Hızlı başlangıç
 
@@ -20,7 +20,7 @@ cd nobetcimMobile
 `Config/Secrets.xcconfig` dosyasını açıp gerçek API anahtarını yazın:
 
 ```xcconfig
-NOBETECZA_API_KEY = necz_xxxxxxxx
+NOBETECZA_API_KEY = nbcm_xxxxxxxx
 ```
 
 Xcode’da `nobetcim.xcodeproj` → scheme **nobetcim** → gerçek cihaz veya simülatör → Run.

@@ -46,9 +46,9 @@
 /* Begin PBXFileReference section */
 		0A65842F2FB30DF2005347A8 /* nobetcim.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = nobetcim.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0B0000012FB4000000000000 /* NobetcimWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NobetcimWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		0E1000012FB7000000000001 /* nobetcimTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = nobetcimTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C1000012FB5000000000001 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		0C1000022FB5000000000002 /* Secrets.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig.example; sourceTree = "<group>"; };
+		0E1000012FB7000000000001 /* nobetcimTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = nobetcimTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */

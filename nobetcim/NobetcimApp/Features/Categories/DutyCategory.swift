@@ -1,6 +1,5 @@
 import Foundation
 
-/// Şu an yalnızca eczane modülü açıktır; diğer satırlar yakında bilgisidir.
 enum DutyCategory: String, CaseIterable, Identifiable {
     case pharmacy
     case notary
@@ -23,8 +22,7 @@ enum DutyCategory: String, CaseIterable, Identifiable {
 
     var isAvailable: Bool {
         switch self {
-        case .pharmacy: true
-        case .notary: false
+        case .pharmacy, .notary: true
         }
     }
 }
