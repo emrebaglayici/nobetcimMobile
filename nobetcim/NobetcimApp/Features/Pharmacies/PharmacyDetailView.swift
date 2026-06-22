@@ -3,8 +3,13 @@ import SwiftUI
 
 struct PharmacyDetailView: View {
     let pharmacy: Pharmacy
+    var kind: MapPlaceKind = .pharmacy
     @State private var showsPhoneAlert = false
     @State private var showsDirectionsAlert = false
+
+    private var accent: Color { kind.color }
+    private var status: PlaceOperatingStatus { OperatingSchedule.status(kind: kind) }
+    private var statusColor: Color { status.isClosed ? .secondary : accent }
 
     var body: some View {
         ZStack {
@@ -29,7 +34,7 @@ struct PharmacyDetailView: View {
                 .padding(.bottom, 16)
             }
         }
-        .navigationTitle("Eczane Detayı")
+        .navigationTitle("\(kind.title) Detayı")
         .navigationBarTitleDisplayMode(.inline)
         .alert("Telefon numarası bulunamadı.", isPresented: $showsPhoneAlert) {
             Button("Tamam", role: .cancel) {}
@@ -41,13 +46,13 @@ struct PharmacyDetailView: View {
 
     private var header: some View {
         ZStack {
-            AppTheme.primary.opacity(0.10)
+            accent.opacity(0.10)
                 .ignoresSafeArea(edges: .horizontal)
 
             HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "cross.case.fill")
+                Image(systemName: kind.systemImage)
                     .font(.title3)
-                    .foregroundStyle(AppTheme.primary)
+                    .foregroundStyle(accent)
                     .frame(width: 40, height: 40)
                     .background(Color(.systemBackground).opacity(0.92), in: Circle())
 
@@ -58,7 +63,7 @@ struct PharmacyDetailView: View {
                     Text(pharmacy.displayLocationLine)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                    DetailBadge(text: "Bugün Nöbetçi", systemImage: "checkmark.seal.fill", color: AppTheme.primary)
+                    DetailBadge(text: status.title, systemImage: status.isClosed ? "xmark.circle.fill" : "checkmark.seal.fill", color: statusColor)
                 }
 
                 Spacer(minLength: 0)
@@ -91,7 +96,7 @@ struct PharmacyDetailView: View {
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
-                    .tint(AppTheme.directions)
+                    .tint(accent)
                     .padding(12)
                 }
             }
@@ -101,9 +106,9 @@ struct PharmacyDetailView: View {
     private var infoSection: some View {
         DetailCard {
             VStack(alignment: .leading, spacing: 14) {
-                InfoRow(title: "Adres", value: pharmacy.displayAddress, systemImage: "mappin.and.ellipse")
-                InfoRow(title: "Telefon", value: pharmacy.phone ?? "Telefon numarası bulunamadı.", systemImage: "phone")
-                InfoRow(title: "Konum", value: pharmacy.displayLocationLine, systemImage: "building.2")
+                InfoRow(title: "Adres", value: pharmacy.displayAddress, systemImage: "mappin.and.ellipse", color: accent)
+                InfoRow(title: "Telefon", value: pharmacy.phone ?? "Telefon numarası bulunamadı.", systemImage: "phone", color: accent)
+                InfoRow(title: "Konum", value: pharmacy.displayLocationLine, systemImage: "building.2", color: accent)
             }
             .padding(16)
         }
@@ -119,11 +124,11 @@ struct PharmacyDetailView: View {
                     }
                     AppActions.call(pharmacy.phone)
                 } label: {
-                    Label("Eczaneyi Ara", systemImage: "phone.fill")
+                    Label(kind.callActionTitle, systemImage: "phone.fill")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(AppTheme.call)
+                .tint(accent)
 
                 Button {
                     guard pharmacy.coordinate != nil else {
@@ -136,7 +141,7 @@ struct PharmacyDetailView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(AppTheme.directions)
+                .tint(accent)
 
                 Button {
                     guard pharmacy.coordinate != nil else {
@@ -186,11 +191,12 @@ private struct InfoRow: View {
     let title: String
     let value: String
     let systemImage: String
+    var color: Color = AppTheme.primary
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: systemImage)
-                .foregroundStyle(AppTheme.primary)
+                .foregroundStyle(color)
                 .frame(width: 24)
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)

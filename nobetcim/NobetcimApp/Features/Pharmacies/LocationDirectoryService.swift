@@ -2,7 +2,7 @@ import Foundation
 
 protocol LocationDirectoryServiceProtocol {
     func fetchCities() async throws -> [CityDistrict]
-    func fetchDistricts(citySlug: String) async throws -> [DistrictInfo]
+    func fetchDistricts(citySlug: String, type: APIEndpoint.DirectoryKind?) async throws -> [DistrictInfo]
 }
 
 final class LocationDirectoryService: LocationDirectoryServiceProtocol {
@@ -17,8 +17,8 @@ final class LocationDirectoryService: LocationDirectoryServiceProtocol {
         return response.items
     }
 
-    func fetchDistricts(citySlug: String) async throws -> [DistrictInfo] {
-        let response = try await apiClient.send(.districts(citySlug: citySlug), as: DistrictResponse.self)
+    func fetchDistricts(citySlug: String, type: APIEndpoint.DirectoryKind? = nil) async throws -> [DistrictInfo] {
+        let response = try await apiClient.send(.districts(citySlug: citySlug, type: type), as: DistrictResponse.self)
         return response.items
     }
 }

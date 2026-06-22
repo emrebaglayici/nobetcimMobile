@@ -7,16 +7,17 @@ struct CategorySelectionView: View {
                 .font(.headline)
 
             ForEach(DutyCategory.allCases) { category in
+                let color = category == .notary ? AppTheme.notary : AppTheme.primary
                 HStack {
                     Image(systemName: category.systemImage)
-                        .foregroundStyle(category.isAvailable ? AppTheme.primary : .secondary)
+                        .foregroundStyle(category.isAvailable ? color : .secondary)
                         .frame(width: 28)
                     Text(category.title)
                     Spacer()
                     if category.isAvailable {
                         Text("Aktif")
                             .font(.caption.bold())
-                            .foregroundStyle(AppTheme.primary)
+                            .foregroundStyle(color)
                     } else {
                         Text("Yakında")
                             .font(.caption.bold())

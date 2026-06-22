@@ -18,7 +18,6 @@ struct NobetcimApp: App {
                 .environmentObject(locationManager)
                 .environmentObject(interstitialAdManager)
                 .environmentObject(widgetLocationCoordinator)
-                .tint(AppTheme.primary)
         }
     }
 }
@@ -30,6 +29,7 @@ struct RootTabView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     @StateObject private var pharmacyViewModel = PharmacyViewModel()
+    @StateObject private var notaryViewModel = NotaryViewModel()
     @State private var selectedTab: AppTab = .pharmacies
     @State private var forceUpdateRequired = false
     @State private var forceUpdateMessage = ""
@@ -41,6 +41,7 @@ struct RootTabView: View {
                 ForceUpdateView(message: forceUpdateMessage, appStoreURL: forceUpdateURL)
             } else {
                 mainTabs
+                    .tint(selectedTab == .notaries ? AppTheme.notary : AppTheme.primary)
             }
         }
         .task {
@@ -72,8 +73,16 @@ struct RootTabView: View {
             .tag(AppTab.pharmacies)
 
             NavigationStack {
+                NotaryHomeView(viewModel: notaryViewModel)
+            }
+            .tabItem {
+                Label("Noterler", systemImage: "doc.text.fill")
+            }
+            .tag(AppTab.notaries)
+
+            NavigationStack {
                 if selectedTab == .map {
-                    PharmacyMapView(pharmacies: pharmacyViewModel.pharmacies)
+                    PharmacyMapView(pharmacies: pharmacyViewModel.pharmacies, notaries: notaryViewModel.notaries)
                 } else {
                     ProgressView()
                         .navigationTitle("Harita")
@@ -121,6 +130,7 @@ struct RootTabView: View {
 
 enum AppTab: Hashable {
     case pharmacies
+    case notaries
     case map
     case more
 }

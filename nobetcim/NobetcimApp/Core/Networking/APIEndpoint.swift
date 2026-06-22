@@ -8,21 +8,50 @@ enum HTTPMethod: String {
 enum APIEndpoint {
     case dutyPharmacies(citySlug: String, districtSlug: String?)
     case nearby(latitude: CLLocationDegrees, longitude: CLLocationDegrees, radius: Int)
+    case pharmacyCatalog(citySlug: String?, districtSlug: String?, page: Int, limit: Int)
+    case nearbyCatalog(latitude: CLLocationDegrees, longitude: CLLocationDegrees, radius: Int, limit: Int, citySlug: String?, districtSlug: String?)
+    case searchPharmacies(query: String, citySlug: String?)
+    case pharmacyDetail(id: String)
+    case dutyNotaries(citySlug: String, districtSlug: String?)
+    case nearbyNotaries(latitude: CLLocationDegrees, longitude: CLLocationDegrees, radius: Int)
+    case notaryCatalog(citySlug: String?, districtSlug: String?, page: Int, limit: Int)
+    case searchNotaries(query: String, citySlug: String?)
+    case notaryDetail(id: String)
     case cities
-    case districts(citySlug: String)
+    case districts(citySlug: String, type: DirectoryKind? = nil)
+
+    enum DirectoryKind: String {
+        case notary = "noter"
+    }
 
     var method: HTTPMethod { .get }
 
     var path: String {
         switch self {
         case .dutyPharmacies:
-            "/v1/nobetci"
+            "/nobetci"
         case .nearby:
-            "/v1/konum"
+            "/konum"
+        case .pharmacyCatalog, .nearbyCatalog:
+            "/eczaneler"
+        case .searchPharmacies:
+            "/eczane/ara"
+        case let .pharmacyDetail(id):
+            "/eczane/\(id)"
+        case .dutyNotaries:
+            "/nobetci-noter"
+        case .nearbyNotaries:
+            "/noter-konum"
+        case .notaryCatalog:
+            "/noterler"
+        case .searchNotaries:
+            "/noter/ara"
+        case let .notaryDetail(id):
+            "/noter/\(id)"
         case .cities:
-            "/v1/iller"
+            "/iller"
         case .districts:
-            "/v1/ilceler"
+            "/ilceler"
         }
     }
 
@@ -39,10 +68,49 @@ enum APIEndpoint {
                 URLQueryItem(name: "lng", value: String(longitude)),
                 URLQueryItem(name: "radius", value: String(radius))
             ]
+        case let .pharmacyCatalog(citySlug, districtSlug, page, limit),
+             let .notaryCatalog(citySlug, districtSlug, page, limit):
+            [
+                URLQueryItem(name: "il", value: citySlug),
+                URLQueryItem(name: "ilce", value: districtSlug),
+                URLQueryItem(name: "page", value: String(page)),
+                URLQueryItem(name: "limit", value: String(limit))
+            ].compactMap { $0.value?.isEmpty == false ? $0 : nil }
+        case let .nearbyCatalog(latitude, longitude, radius, limit, citySlug, districtSlug):
+            [
+                URLQueryItem(name: "lat", value: String(latitude)),
+                URLQueryItem(name: "lng", value: String(longitude)),
+                URLQueryItem(name: "radius", value: String(radius)),
+                URLQueryItem(name: "limit", value: String(limit)),
+                URLQueryItem(name: "il", value: citySlug),
+                URLQueryItem(name: "ilce", value: districtSlug)
+            ].compactMap { $0.value?.isEmpty == false ? $0 : nil }
+        case let .searchPharmacies(query, citySlug),
+             let .searchNotaries(query, citySlug):
+            [
+                URLQueryItem(name: "q", value: query),
+                URLQueryItem(name: "il", value: citySlug)
+            ].compactMap { $0.value?.isEmpty == false ? $0 : nil }
+        case .pharmacyDetail, .notaryDetail:
+            []
         case .cities:
             []
-        case let .districts(citySlug):
-            [URLQueryItem(name: "il", value: citySlug)]
+        case let .dutyNotaries(citySlug, districtSlug):
+            [
+                URLQueryItem(name: "il", value: citySlug),
+                URLQueryItem(name: "ilce", value: districtSlug)
+            ].compactMap { $0.value?.isEmpty == false ? $0 : nil }
+        case let .nearbyNotaries(latitude, longitude, radius):
+            [
+                URLQueryItem(name: "lat", value: String(latitude)),
+                URLQueryItem(name: "lng", value: String(longitude)),
+                URLQueryItem(name: "radius", value: String(radius))
+            ]
+        case let .districts(citySlug, type):
+            [
+                URLQueryItem(name: "il", value: citySlug),
+                URLQueryItem(name: "tur", value: type?.rawValue)
+            ].compactMap { $0.value?.isEmpty == false ? $0 : nil }
         }
     }
 

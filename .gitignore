@@ -56,3 +56,7 @@ fastlane/test_output
 .env
 .env.*
 !.env.example
+android/local.properties
+android/upload-keystore.jks
+android/*.jks
+android/*.keystore

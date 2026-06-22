@@ -102,6 +102,12 @@ final class LocationManager: NSObject, ObservableObject {
     }
 
     private func requestAuthorizationIfNeeded() async throws -> CLAuthorizationStatus {
+        #if DEBUG
+        if currentLocation != nil, isAuthorized {
+            return authorizationStatus
+        }
+        #endif
+
         authorizationStatus = manager.authorizationStatus
 
         switch authorizationStatus {

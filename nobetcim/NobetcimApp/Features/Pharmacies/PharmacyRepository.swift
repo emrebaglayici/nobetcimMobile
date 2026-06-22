@@ -34,7 +34,9 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
         forceRefresh: Bool = false,
         ignoreThrottle: Bool = false
     ) async throws -> [Pharmacy] {
-        let cache = DailyCacheStore<[Pharmacy]>(key: "nobetcim.daily.nearby.\(latitude.nearbyCacheCoordinateKey).\(longitude.nearbyCacheCoordinateKey)")
+        let usesCatalog = OperatingSchedule.pharmacyUsesCatalog()
+        let cacheKind = usesCatalog ? "catalog" : "duty"
+        let cache = DailyCacheStore<[Pharmacy]>(key: "nobetcim.daily.nearby.\(cacheKind).\(latitude.nearbyCacheCoordinateKey).\(longitude.nearbyCacheCoordinateKey)")
         let todayCache = cache.loadToday()
         let shouldUseNetwork = NearbyRefreshPolicy.shouldPerformNetworkFetch(
             forceRefresh: forceRefresh,
@@ -56,7 +58,19 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
             #if DEBUG
             print("NobetEcza daily cache miss: nearby")
             #endif
-            let remote = try await pharmacyService.fetchNearby(latitude: latitude, longitude: longitude, radius: 50000)
+            let remote: [Pharmacy]
+            if usesCatalog {
+                remote = try await pharmacyService.fetchNearbyCatalog(
+                    latitude: latitude,
+                    longitude: longitude,
+                    radius: 50000,
+                    limit: 50,
+                    citySlug: nil,
+                    districtSlug: nil
+                )
+            } else {
+                remote = try await pharmacyService.fetchNearby(latitude: latitude, longitude: longitude, radius: 50000)
+            }
             NearbyRefreshPolicy.recordNetworkFetch()
             let sorted = remote.sortedByDistance(from: CLLocation(latitude: latitude, longitude: longitude))
             if !sorted.isEmpty {
@@ -83,7 +97,9 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
         let citySlug = cityInfo?.citySlug ?? city.slugifiedTurkish
         let canonicalDistrict = district.map { $0.canonicalDistrictName }
         let districtCachePart = canonicalDistrict?.slugifiedTurkish ?? "all"
-        let cache = DailyCacheStore<[Pharmacy]>(key: "nobetcim.daily.nobetci.\(citySlug).\(districtCachePart)")
+        let usesCatalog = OperatingSchedule.pharmacyUsesCatalog()
+        let cacheKind = usesCatalog ? "catalog" : "nobetci"
+        let cache = DailyCacheStore<[Pharmacy]>(key: "nobetcim.daily.\(cacheKind).\(citySlug).\(districtCachePart)")
 
         if !forceRefresh, let cached = cache.loadToday() {
             #if DEBUG
@@ -96,11 +112,20 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
             #if DEBUG
             print("NobetEcza daily cache miss: \(citySlug)/\(districtCachePart)")
             #endif
-            let remote = try await fetchDutyPharmacies(
-                citySlug: citySlug,
-                district: canonicalDistrict,
-                cityInfo: cityInfo
-            )
+            let remote: [Pharmacy]
+            if usesCatalog {
+                remote = try await fetchCatalogPharmacies(
+                    citySlug: citySlug,
+                    district: canonicalDistrict,
+                    cityInfo: cityInfo
+                )
+            } else {
+                remote = try await fetchDutyPharmacies(
+                    citySlug: citySlug,
+                    district: canonicalDistrict,
+                    cityInfo: cityInfo
+                )
+            }
             let sorted = remote.sortedByDistrictAndName()
             if !sorted.isEmpty {
                 cache.saveToday(sorted)
@@ -115,21 +140,30 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
     }
 
     func loadDirectory(forceRefresh: Bool = false) async -> [CityDistrict] {
-        let bundled = TurkeyLocationCatalog.allCities()
-        if !bundled.isEmpty {
-            directoryCache.save(bundled)
-            return bundled
-        }
-
         if !forceRefresh, let cached = directoryCache.load(), !cached.isEmpty {
             return cached
         }
 
-        return []
+        if let remote = try? await directoryService.fetchCities(), !remote.isEmpty {
+            directoryCache.save(remote)
+            return remote
+        }
+
+        let bundled = TurkeyLocationCatalog.allCities()
+        if !bundled.isEmpty {
+            directoryCache.save(bundled)
+        }
+        return bundled
     }
 
     func loadDistricts(for city: String, forceRefresh: Bool = false) async -> [String] {
-        _ = forceRefresh
+        let citySlug = cityInfo(for: city)?.citySlug ?? city.slugifiedTurkish
+        if forceRefresh || TurkeyLocationCatalog.districts(for: city).isEmpty {
+            let remote = (try? await directoryService.fetchDistricts(citySlug: citySlug, type: nil).map(\.name)) ?? []
+            if !remote.isEmpty {
+                return remote
+            }
+        }
         return TurkeyLocationCatalog.districts(for: city)
     }
 
@@ -157,6 +191,44 @@ final class PharmacyRepository: PharmacyRepositoryProtocol {
         }
 
         let cityWide = try await pharmacyService.fetchDutyPharmacies(citySlug: citySlug, districtSlug: nil)
+        return cityWide.filter {
+            $0.district.canonicalDistrictName.matchesTurkish(district)
+        }
+    }
+
+    private func fetchCatalogPharmacies(
+        citySlug: String,
+        district: String?,
+        cityInfo: CityDistrict?
+    ) async throws -> [Pharmacy] {
+        guard let district, !district.isEmpty else {
+            return try await pharmacyService.fetchCatalogPharmacies(
+                citySlug: citySlug,
+                districtSlug: nil,
+                page: 1,
+                limit: 100
+            )
+        }
+
+        let districtSlug = cityInfo?.slug(forDistrict: district) ?? district.slugifiedTurkish
+        let scoped = try await pharmacyService.fetchCatalogPharmacies(
+            citySlug: citySlug,
+            districtSlug: districtSlug,
+            page: 1,
+            limit: 100
+        )
+        if !scoped.isEmpty {
+            return scoped.filter {
+                $0.district.canonicalDistrictName.matchesTurkish(district)
+            }
+        }
+
+        let cityWide = try await pharmacyService.fetchCatalogPharmacies(
+            citySlug: citySlug,
+            districtSlug: nil,
+            page: 1,
+            limit: 100
+        )
         return cityWide.filter {
             $0.district.canonicalDistrictName.matchesTurkish(district)
         }
@@ -191,7 +263,7 @@ private extension Error {
     }
 }
 
-private extension Double {
+extension Double {
     /// ~1.1 km ızgara; küçük konum kaymalarında aynı günlük önbellek kullanılır.
     var nearbyCacheCoordinateKey: String {
         String(format: "%.2f", self)
